@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Syne", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
+
+  /*
+   * Midnight + Electric Blue
+   * 70% base / 20% surface / 10% accent (interactive only)
+   * Light mode: complementary neutrals + same accent
+   */
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-muted: color-mix(in srgb, #3b82f6 12%, transparent);
+  --color-on-accent: #ffffff;
+
+  --color-bg: #f9fafb;
+  --color-bg-elevated: #ffffff;
+  --color-fg: #111827;
+  --color-fg-muted: #6b7280;
+  --color-border: color-mix(in srgb, #111827 10%, transparent);
+  --color-nav: color-mix(in srgb, #f9fafb 88%, transparent);
+}
+
+.dark {
+  --color-bg: #0b0f19;
+  --color-bg-elevated: #111827;
+  --color-fg: #e5e7eb;
+  --color-fg-muted: #9ca3af;
+  --color-border: color-mix(in srgb, #e5e7eb 10%, transparent);
+  --color-nav: color-mix(in srgb, #0b0f19 82%, transparent);
+  --color-accent-muted: color-mix(in srgb, #3b82f6 10%, transparent);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    margin: 0;
+    min-width: 320px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 32%, transparent);
+    color: inherit;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .hero-grid {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-fg-muted) 10%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-fg-muted) 10%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 64px 64px;
+    mask-image: radial-gradient(
+      ellipse 70% 60% at 50% 40%,
+      black 20%,
+      transparent 75%
+    );
+  }
+}
