@@ -7,31 +7,31 @@
   --font-sans: "DM Sans", sans-serif;
 
   /*
-   * Midnight + Electric Blue
+   * Black + Emerald
    * 70% base / 20% surface / 10% accent (interactive only)
    * Light mode: complementary neutrals + same accent
    */
-  --color-accent: #3b82f6;
-  --color-accent-hover: #2563eb;
-  --color-accent-muted: color-mix(in srgb, #3b82f6 12%, transparent);
-  --color-on-accent: #ffffff;
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-muted: color-mix(in srgb, #10b981 12%, transparent);
+  --color-on-accent: #09090b;
 
-  --color-bg: #f9fafb;
+  --color-bg: #fafafa;
   --color-bg-elevated: #ffffff;
-  --color-fg: #111827;
-  --color-fg-muted: #6b7280;
-  --color-border: color-mix(in srgb, #111827 10%, transparent);
-  --color-nav: color-mix(in srgb, #f9fafb 88%, transparent);
+  --color-fg: #18181b;
+  --color-fg-muted: #71717a;
+  --color-border: color-mix(in srgb, #18181b 10%, transparent);
+  --color-nav: color-mix(in srgb, #fafafa 88%, transparent);
 }
 
 .dark {
-  --color-bg: #0b0f19;
-  --color-bg-elevated: #111827;
+  --color-bg: #09090b;
+  --color-bg-elevated: #18181b;
   --color-fg: #e5e7eb;
   --color-fg-muted: #9ca3af;
   --color-border: color-mix(in srgb, #e5e7eb 10%, transparent);
-  --color-nav: color-mix(in srgb, #0b0f19 82%, transparent);
-  --color-accent-muted: color-mix(in srgb, #3b82f6 10%, transparent);
+  --color-nav: color-mix(in srgb, #09090b 82%, transparent);
+  --color-accent-muted: color-mix(in srgb, #10b981 10%, transparent);
 }
 
 @layer base {
