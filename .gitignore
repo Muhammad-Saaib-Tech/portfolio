@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local screenshots / tooling dumps
+hero-desktop.png
+/scripts/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

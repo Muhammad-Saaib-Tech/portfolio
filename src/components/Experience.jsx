@@ -111,11 +111,11 @@ export default function Experience() {
             >
               {/* Timeline rail */}
               <div
-                className="absolute bottom-2 left-[7px] top-2 w-px bg-border sm:left-[11px]"
+                className="absolute bottom-2 left-1.75 top-2 w-px bg-border sm:left-2.75"
                 aria-hidden="true"
               />
               <div
-                className="absolute left-0 top-2 flex size-[15px] items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-[18px]"
+                className="absolute left-0 top-2 flex size-3.75 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"
                 aria-hidden="true"
               >
                 <span className="size-1.5 rounded-full bg-accent sm:size-2" />

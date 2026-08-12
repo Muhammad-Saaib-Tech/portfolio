@@ -58,7 +58,7 @@ export default function PageLoader({ onComplete }) {
       {visible && (
         <motion.div
           key="page-loader"
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-bg"
+          className="fixed inset-0 z-120 flex items-center justify-center bg-bg"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: duration.base, ease }}

@@ -97,7 +97,7 @@ export default function CustomCursor() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[100] overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-100 overflow-hidden"
     >
       <motion.div
         className="absolute top-0 left-0 will-change-transform"

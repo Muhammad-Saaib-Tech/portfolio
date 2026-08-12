@@ -22,6 +22,15 @@
   --color-fg-muted: #6b7280;
   --color-border: color-mix(in srgb, #12122a 10%, transparent);
   --color-nav: color-mix(in srgb, #f8f8fc 88%, transparent);
+
+  /* VS Code Dark+–style tokens for IDE / code cards (language highlighting) */
+  --color-ide-keyword: #569cd6;
+  --color-ide-type: #4ec9b0;
+  --color-ide-string: #ce9178;
+  --color-ide-attribute: #dcdcaa;
+  --color-ide-property: #9cdcfe;
+  --color-ide-tag: #569cd6;
+  --color-ide-punct: #808080;
 }
 
 .dark {

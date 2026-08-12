@@ -44,7 +44,7 @@ function ProjectCardFace({ project, compact = false }) {
 
 function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-8">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-8">
       <motion.div
         className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
         initial={{ opacity: 0 }}
@@ -192,7 +192,7 @@ export default function Projects() {
             const layoutId = `project-card-${project.id}`
 
             return (
-              <motion.li key={project.id} variants={fadeUpVariants} className="min-h-[11.5rem]">
+              <motion.li key={project.id} variants={fadeUpVariants} className="min-h-46">
                 {isOpen ? (
                   <div
                     className="h-full rounded-lg border border-transparent p-6 opacity-0"
