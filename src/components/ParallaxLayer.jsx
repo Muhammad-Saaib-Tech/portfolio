@@ -1,4 +1,7 @@
 // ParallaxLayer — subtle Y-shift for decorative backgrounds only (GPU transform).
+// Disabled below tablet (md) and when prefers-reduced-motion — mobile scroll-linked
+// animations are often janky on real devices.
+import { useEffect, useState } from 'react'
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
 
 /**
@@ -17,6 +20,18 @@ export default function ParallaxLayer({
   children,
 }) {
   const reduceMotion = useReducedMotion()
+  const [allowParallax, setAllowParallax] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const update = () => setAllowParallax(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  const enabled = allowParallax && !reduceMotion
+
   const { scrollYProgress } = useScroll({
     target: scrollRef,
     offset,
@@ -25,13 +40,13 @@ export default function ParallaxLayer({
   const y = useTransform(
     scrollYProgress,
     [0, 1],
-    reduceMotion ? [0, 0] : [0, distance],
+    enabled ? [0, distance] : [0, 0],
   )
 
   return (
     <motion.div
-      className={`will-change-transform ${className}`.trim()}
-      style={{ y }}
+      className={`${enabled ? 'will-change-transform ' : ''}${className}`.trim()}
+      style={enabled ? { y } : undefined}
       aria-hidden="true"
     >
       {children}

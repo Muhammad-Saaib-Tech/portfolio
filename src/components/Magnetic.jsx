@@ -11,6 +11,7 @@ const MAX_OFFSET = 8
 
 function canUseMagnetic() {
   if (typeof window === 'undefined') return false
+  if (window.matchMedia('(pointer: coarse)').matches) return false
   return (
     window.matchMedia('(pointer: fine)').matches &&
     window.matchMedia('(hover: hover)').matches
@@ -38,11 +39,14 @@ export default function Magnetic({ children, className = '' }) {
 
     const fineMq = window.matchMedia('(pointer: fine)')
     const hoverMq = window.matchMedia('(hover: hover)')
+    const coarseMq = window.matchMedia('(pointer: coarse)')
     fineMq.addEventListener('change', update)
     hoverMq.addEventListener('change', update)
+    coarseMq.addEventListener('change', update)
     return () => {
       fineMq.removeEventListener('change', update)
       hoverMq.removeEventListener('change', update)
+      coarseMq.removeEventListener('change', update)
     }
   }, [reduceMotion])
 

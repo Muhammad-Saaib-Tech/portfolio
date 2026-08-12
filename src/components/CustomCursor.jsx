@@ -13,6 +13,8 @@ const HOVER_SELECTOR =
 
 function canUseCustomCursor() {
   if (typeof window === 'undefined') return false
+  // Touch / coarse pointers must never get cursor:none or an overlay cursor
+  if (window.matchMedia('(pointer: coarse)').matches) return false
   const finePointer = window.matchMedia('(pointer: fine)').matches
   const canHover = window.matchMedia('(hover: hover)').matches
   return finePointer && canHover
@@ -42,12 +44,15 @@ export default function CustomCursor() {
 
     const fineMq = window.matchMedia('(pointer: fine)')
     const hoverMq = window.matchMedia('(hover: hover)')
+    const coarseMq = window.matchMedia('(pointer: coarse)')
     fineMq.addEventListener('change', updateEnabled)
     hoverMq.addEventListener('change', updateEnabled)
+    coarseMq.addEventListener('change', updateEnabled)
 
     return () => {
       fineMq.removeEventListener('change', updateEnabled)
       hoverMq.removeEventListener('change', updateEnabled)
+      coarseMq.removeEventListener('change', updateEnabled)
     }
   }, [reduceMotion])
 

@@ -38,8 +38,8 @@ function CodeEditorCard() {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_100%_0%,color-mix(in_srgb,var(--color-fg-muted)_8%,transparent),transparent_60%)]"
           aria-hidden="true"
         />
-        <pre className="relative overflow-x-auto p-5 font-mono text-[13px] leading-7 sm:p-6 sm:text-sm">
-          <code className="block text-fg">
+        <pre className="relative max-w-full overflow-x-auto overscroll-x-contain p-4 font-mono text-[12px] leading-6 sm:p-6 sm:text-sm sm:leading-7">
+          <code className="block min-w-0 whitespace-pre-wrap wrap-break-word text-fg sm:whitespace-pre sm:break-normal">
             <span className="text-fg-muted">{'{'}</span>
             {'\n'}
             <LineIndent />
@@ -122,13 +122,14 @@ export default function About() {
       aria-labelledby="about-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Bio column */}
           <motion.div
             variants={fadeLeftVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.25 }}
+            className="min-w-0"
           >
             <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
               About
@@ -136,11 +137,11 @@ export default function About() {
             <Heading
               as="h2"
               id="about-heading"
-              className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
+              className="text-[clamp(1.75rem,1.4rem+1.5vw,2.25rem)] font-bold tracking-tight text-fg sm:text-4xl"
             >
               Building systems that last
             </Heading>
-            <p className="mt-6 text-base leading-relaxed text-fg-muted sm:text-lg">
+            <p className="mt-6 text-pretty text-base leading-relaxed text-fg-muted sm:text-lg">
               {about.bio}
             </p>
 
@@ -154,7 +155,7 @@ export default function About() {
             >
               {about.techBadges.map((badge) => (
                 <motion.li key={badge.name} variants={staggerItemVariants}>
-                  <span className="inline-flex items-center rounded-full border border-border bg-bg-elevated px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:scale-105 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
+                  <span className="inline-flex min-h-9 items-center rounded-full border border-border bg-bg-elevated px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                     {badge.label}
                   </span>
                 </motion.li>
@@ -167,8 +168,8 @@ export default function About() {
             variants={fadeRightVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            className="relative"
+            viewport={{ once: true, amount: 0.25 }}
+            className="relative min-w-0"
           >
             <ParallaxLayer
               scrollRef={sectionRef}

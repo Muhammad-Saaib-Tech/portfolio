@@ -89,32 +89,34 @@ export default function Contact() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
-          className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between"
+          className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between sm:gap-10"
         >
-          <ul className="flex flex-col gap-3">
+          <ul className="flex min-w-0 flex-col gap-2">
             {contactLinks.map(({ id, label, href, icon: Icon }) => (
               <li key={id}>
                 <a
                   href={href}
                   target={id === 'linkedin' ? '_blank' : undefined}
                   rel={id === 'linkedin' ? 'noopener noreferrer' : undefined}
-                  className="group inline-flex items-center gap-3 rounded-md py-1 text-fg-muted transition duration-300 hover:text-accent"
+                  className="group inline-flex min-h-11 max-w-full items-center gap-3 rounded-md py-1 text-fg-muted transition duration-300 hover:text-accent"
                 >
-                  <span className="inline-flex size-10 items-center justify-center rounded-md border border-border bg-bg-elevated text-fg-muted transition duration-300 group-hover:border-accent/50 group-hover:bg-accent-muted group-hover:text-accent group-hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
+                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-border bg-bg-elevated text-fg-muted transition duration-300 group-hover:border-accent/50 group-hover:bg-accent-muted group-hover:text-accent group-hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
                     <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
                   </span>
-                  <span className="text-sm font-medium sm:text-base">{label}</span>
+                  <span className="min-w-0 break-all text-sm font-medium sm:break-normal sm:text-base">
+                    {label}
+                  </span>
                 </a>
               </li>
             ))}
           </ul>
 
           {/* CV served from public/assets/cv.pdf */}
-          <Magnetic>
+          <Magnetic className="w-full sm:w-auto">
             <a
               href={profile.cvUrl}
               download
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover sm:w-auto"
             >
               <Download size={16} strokeWidth={2} aria-hidden="true" />
               Download CV
@@ -123,13 +125,13 @@ export default function Contact() {
         </motion.div>
       </div>
 
-      <footer className="mt-20 border-t border-border py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8">
-          <p>
+      <footer className="mt-16 border-t border-border py-8 sm:mt-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-center text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:text-left">
+          <p className="order-1">
             © {year} {profile.name}
           </p>
           <ul
-            className="flex flex-wrap items-center justify-center gap-x-2 text-xs text-fg-muted/80"
+            className="order-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-fg-muted/80 sm:order-2"
             aria-label="Languages"
           >
             {languages.map((lang, i) => (
@@ -141,7 +143,7 @@ export default function Contact() {
               </li>
             ))}
           </ul>
-          <p className="text-xs">Full-Stack .NET Developer · Islamabad</p>
+          <p className="order-2 text-xs sm:order-3">Full-Stack .NET Developer · Islamabad</p>
         </div>
       </footer>
     </section>

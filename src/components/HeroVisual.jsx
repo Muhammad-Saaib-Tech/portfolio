@@ -124,6 +124,7 @@ const CODE_SNIPPETS = [
     className: 'top-[4%] right-[6%] w-[min(92%,14.5rem)] -rotate-2',
     duration: 10,
     delay: 0,
+    mobile: true,
     lines: [
       [
         { c: 'attr', t: '[HttpGet(' },
@@ -156,6 +157,7 @@ const CODE_SNIPPETS = [
     className: 'bottom-[8%] left-[10%] w-[min(88%,13rem)] rotate-2',
     duration: 11.5,
     delay: 1.2,
+    mobile: false,
     lines: [
       [
         { c: 'tag', t: '<h3' },
@@ -192,9 +194,10 @@ const CODE_SNIPPETS = [
     id: 'ef',
     file: 'DocumentService.cs',
     lang: 'C#',
-    className: 'top-[56%] right-[2%] w-[min(90%,14rem)] -rotate-1 hidden sm:block',
+    className: 'top-[56%] right-[2%] w-[min(90%,14rem)] -rotate-1',
     duration: 9.2,
     delay: 0.6,
+    mobile: false,
     lines: [
       [
         { c: 'kw', t: 'return' },
@@ -354,11 +357,11 @@ function TechIcon({ item, pointerX, pointerY, enableParallax, reduceMotion }) {
         }
       >
         <div
-          className="flex size-11 items-center justify-center rounded-xl border border-border bg-bg-elevated shadow-[0_10px_28px_color-mix(in_srgb,var(--color-fg)_22%,transparent),0_2px_6px_color-mix(in_srgb,var(--color-fg)_12%,transparent)] sm:size-12"
+          className="flex size-9 items-center justify-center rounded-xl border border-border bg-bg-elevated shadow-[0_10px_28px_color-mix(in_srgb,var(--color-fg)_22%,transparent),0_2px_6px_color-mix(in_srgb,var(--color-fg)_12%,transparent)] sm:size-11 lg:size-12"
           title={item.label}
         >
           <Icon
-            className="size-5 sm:size-[1.4rem]"
+            className="size-4 sm:size-5 lg:size-[1.4rem]"
             style={{ color: item.brand }}
             aria-hidden="true"
           />
@@ -387,6 +390,11 @@ export default function HeroVisual({ introReady = true }) {
     [compact],
   )
 
+  const snippets = useMemo(
+    () => (compact ? CODE_SNIPPETS.filter((s) => s.mobile) : CODE_SNIPPETS),
+    [compact],
+  )
+
   const enableParallax = parallax && !reduceMotion
 
   const onMove = (e) => {
@@ -411,10 +419,10 @@ export default function HeroVisual({ introReady = true }) {
       initial={{ opacity: 0, y: 24 }}
       animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.65, ease, delay: introReady ? 0.15 : 0 }}
-      className="relative mx-auto aspect-square w-full max-w-88 overflow-hidden sm:max-w-96 lg:mx-0 lg:w-full lg:max-w-104 lg:justify-self-end xl:max-w-md"
+      className="relative mx-auto aspect-square w-full max-w-[min(100%,20rem)] overflow-hidden sm:max-w-96 lg:mx-0 lg:w-full lg:max-w-104 lg:justify-self-end xl:max-w-md"
       aria-hidden="true"
     >
-      {CODE_SNIPPETS.map((snippet) => (
+      {snippets.map((snippet) => (
         <CodeCard key={snippet.id} snippet={snippet} reduceMotion={!!reduceMotion} />
       ))}
 

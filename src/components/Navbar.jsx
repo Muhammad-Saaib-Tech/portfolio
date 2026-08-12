@@ -49,6 +49,22 @@ export default function Navbar() {
     }
   }, [menuOpen])
 
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    const onResize = () => {
+      if (window.matchMedia('(min-width: 1024px)').matches) setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onResize)
+    }
+  }, [menuOpen])
+
   const handleNavClick = (id) => {
     setMenuOpen(false)
     const el = document.getElementById(id)
@@ -63,20 +79,21 @@ export default function Navbar() {
           : 'border-b border-transparent bg-transparent'
       }`}
     >
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-8">
         <a
           href="#home"
           onClick={(e) => {
             e.preventDefault()
             handleNavClick('home')
           }}
-          className="font-display text-lg font-bold tracking-tight text-fg transition-colors hover:text-accent"
+          className="inline-flex min-h-11 items-center font-display text-lg font-bold tracking-tight text-fg transition-colors hover:text-accent"
         >
           <span className="text-accent">{profile.shortName.charAt(0)}</span>
           {profile.shortName.slice(1)}
         </a>
 
-        <ul className="hidden items-center gap-1 md:flex">
+        {/* Desktop links from lg (1024px+) so tablets keep the hamburger */}
+        <ul className="hidden items-center gap-0.5 lg:flex">
           {navLinks.map((link) => {
             const isActive = activeId === link.id
             return (
@@ -87,7 +104,7 @@ export default function Navbar() {
                     e.preventDefault()
                     handleNavClick(link.id)
                   }}
-                  className={`relative rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`relative inline-flex min-h-11 items-center rounded-md px-3 text-sm font-medium transition-colors ${
                     isActive
                       ? 'text-accent'
                       : 'text-fg-muted hover:text-fg'
@@ -97,7 +114,7 @@ export default function Navbar() {
                   {isActive && (
                     <motion.span
                       layoutId="nav-indicator"
-                      className="absolute inset-x-2 -bottom-0.5 h-0.5 rounded-full bg-accent"
+                      className="absolute inset-x-2 bottom-2 h-0.5 rounded-full bg-accent"
                       transition={revealTransitionFast}
                     />
                   )}
@@ -107,19 +124,19 @@ export default function Navbar() {
           })}
         </ul>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex size-9 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent"
+            className="inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent"
           >
             {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
           </button>
 
           <button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent md:hidden"
+            className="inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent lg:hidden"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
@@ -136,9 +153,9 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={revealTransitionFast}
-            className="overflow-hidden border-t border-border bg-bg md:hidden"
+            className="overflow-hidden border-t border-border bg-bg lg:hidden"
           >
-            <ul className="flex flex-col gap-1 px-5 py-4">
+            <ul className="flex max-h-[min(70dvh,calc(100dvh-4rem))] flex-col gap-0.5 overflow-y-auto px-5 py-3">
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.id}
@@ -155,8 +172,8 @@ export default function Navbar() {
                       e.preventDefault()
                       handleNavClick(link.id)
                     }}
-                    className={`block rounded-md px-3 py-3 text-base font-medium ${
-                      activeId === link.id ? 'text-accent' : 'text-fg-muted'
+                    className={`flex min-h-11 items-center rounded-md px-3 text-base font-medium ${
+                      activeId === link.id ? 'bg-accent-muted text-accent' : 'text-fg-muted'
                     }`}
                   >
                     {link.label}

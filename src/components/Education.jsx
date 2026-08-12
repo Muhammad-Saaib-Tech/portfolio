@@ -61,7 +61,7 @@ export default function Education() {
                 <ul className="flex flex-wrap gap-2.5" aria-label="Coursework">
                   {education.coursework.map((course) => (
                     <li key={course}>
-                      <span className="inline-flex items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:scale-105 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
+                      <span className="inline-flex min-h-9 items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                         {course}
                       </span>
                     </li>

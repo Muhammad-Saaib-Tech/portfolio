@@ -49,7 +49,7 @@ export default function Hero({ introReady = true }) {
         </ParallaxLayer>
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-24 pt-28 sm:px-8 sm:pt-32 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-20 xl:gap-x-24">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-5 pb-16 pt-24 sm:gap-10 sm:px-8 sm:pb-20 sm:pt-28 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-20 lg:pb-24 lg:pt-32 xl:gap-x-24">
         <motion.div
           variants={heroContainerVariants}
           initial="hidden"
@@ -58,23 +58,23 @@ export default function Hero({ introReady = true }) {
         >
           <motion.p
             variants={heroItemVariants}
-            className="mb-5 flex items-center gap-2 text-sm font-medium text-fg-muted"
+            className="mb-4 flex items-center gap-2 text-sm font-medium text-fg-muted sm:mb-5"
           >
-            <MapPin size={15} className="text-accent" strokeWidth={1.75} />
+            <MapPin size={15} className="shrink-0 text-accent" strokeWidth={1.75} />
             {profile.location}
           </motion.p>
 
           <Heading
             as={motion.h1}
             variants={heroItemVariants}
-            className="max-w-[16ch] text-[2.2rem] font-extrabold leading-[1.12] tracking-tight text-fg sm:text-[2.45rem] lg:text-[2.55rem] xl:text-[3rem]"
+            className="max-w-[16ch] text-[clamp(1.75rem,1.1rem+4.2vw,3rem)] font-extrabold leading-[1.12] tracking-tight wrap-break-word text-fg"
           >
             {profile.name}
           </Heading>
 
           <motion.h2
             variants={heroItemVariants}
-            className="mt-4 flex flex-wrap gap-x-2.5 font-display text-[clamp(1.25rem,3.5vw,1.85rem)] font-semibold tracking-tight text-accent"
+            className="mt-3 flex flex-wrap gap-x-2 gap-y-1 font-display text-[clamp(1.15rem,0.9rem+1.8vw,1.85rem)] font-semibold tracking-tight text-accent sm:mt-4 sm:gap-x-2.5"
             aria-label={profile.title}
           >
             {titleWords.map((word, i) => (
@@ -101,24 +101,27 @@ export default function Hero({ introReady = true }) {
 
           <motion.p
             variants={heroItemVariants}
-            className="mt-6 max-w-xl text-balance text-base leading-relaxed text-fg-muted sm:text-lg"
+            className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-fg-muted sm:mt-6 sm:text-lg"
           >
             {profile.tagline}
           </motion.p>
 
-          <motion.div variants={heroItemVariants} className="mt-10 flex flex-wrap items-center gap-4">
-            <Magnetic>
+          <motion.div
+            variants={heroItemVariants}
+            className="mt-8 flex w-full flex-col gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
+          >
+            <Magnetic className="w-full sm:w-auto">
               <a
                 href="#contact"
-                className="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover sm:w-auto"
               >
                 Get in touch
               </a>
             </Magnetic>
-            <Magnetic>
+            <Magnetic className="w-full sm:w-auto">
               <a
                 href="#projects"
-                className="inline-flex items-center justify-center rounded-md border border-border px-6 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent hover:text-accent"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-border px-6 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent hover:text-accent sm:w-auto"
               >
                 View projects
               </a>
@@ -131,6 +134,7 @@ export default function Hero({ introReady = true }) {
         </div>
       </div>
 
+      {/* Desktop / tall layouts only — avoids overlapping CTAs on short stacked viewports */}
       <motion.a
         href="#about"
         initial={{ opacity: 0 }}
@@ -140,7 +144,7 @@ export default function Hero({ introReady = true }) {
           ...revealTransition,
           duration: duration.slow,
         }}
-        className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-fg-muted transition-colors hover:text-accent"
+        className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-fg-muted transition-colors hover:text-accent lg:flex"
         aria-label="Scroll to about section"
       >
         <span className="text-[11px] font-medium uppercase tracking-[0.2em]">Scroll</span>

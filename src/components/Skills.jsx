@@ -49,7 +49,7 @@ export default function Skills() {
         </motion.div>
 
         <motion.ul
-          className="mt-12 grid gap-5 sm:grid-cols-2"
+          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2"
           variants={staggerContainerVariants}
           initial="hidden"
           whileInView="visible"
@@ -62,10 +62,10 @@ export default function Skills() {
               <motion.li
                 key={group.category}
                 variants={panelVariants}
-                className="group rounded-lg border border-border bg-bg-elevated p-6 transition duration-300 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-7"
+                className="group rounded-lg border border-border bg-bg-elevated p-5 transition duration-300 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-7 [@media(hover:hover)]:hover:-translate-y-0.5"
               >
                 <div className="mb-5 flex items-center gap-3">
-                  <span className="inline-flex size-10 items-center justify-center rounded-md border border-border bg-bg text-accent transition-colors group-hover:border-accent/40 group-hover:bg-accent-muted">
+                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent transition-colors group-hover:border-accent/40 group-hover:bg-accent-muted">
                     <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
                   </span>
                   <h3 className="font-display text-lg font-semibold tracking-tight text-fg">
@@ -76,7 +76,7 @@ export default function Skills() {
                 <ul className="flex flex-wrap gap-2.5" aria-label={`${group.category} skills`}>
                   {group.items.map((skill) => (
                     <motion.li key={skill} variants={staggerItemVariants}>
-                      <span className="inline-flex items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:scale-105 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]">
+                      <span className="inline-flex min-h-9 max-w-full items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-left text-sm font-medium wrap-break-word text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                         {skill}
                       </span>
                     </motion.li>

@@ -19,7 +19,7 @@ function ProjectBlock({ project, defaultOpen = false }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-accent-muted/40"
+        className="flex min-h-11 w-full items-start justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-accent-muted/40 sm:gap-4 sm:px-5"
       >
         <div className="min-w-0">
           <h4 className="font-display text-base font-semibold tracking-tight text-fg sm:text-lg">
@@ -35,7 +35,7 @@ function ProjectBlock({ project, defaultOpen = false }) {
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={revealTransitionFast}
-          className="mt-1 shrink-0 text-fg-muted"
+          className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center text-fg-muted"
         >
           <ChevronDown size={18} strokeWidth={1.75} aria-hidden="true" />
         </motion.span>
@@ -51,11 +51,11 @@ function ProjectBlock({ project, defaultOpen = false }) {
             transition={revealTransitionFast}
             className="overflow-hidden"
           >
-            <ul className="space-y-3 border-t border-border px-5 py-4">
+            <ul className="space-y-3 border-t border-border px-4 py-4 sm:px-5">
               {project.bullets.map((bullet) => (
                 <li
                   key={bullet}
-                  className="relative pl-4 text-sm leading-relaxed text-fg-muted before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-accent"
+                  className="relative pl-4 text-pretty text-sm leading-relaxed text-fg-muted before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-accent"
                 >
                   {bullet}
                 </li>
@@ -107,15 +107,15 @@ export default function Experience() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              className="relative pl-8 sm:pl-10"
+              className="relative min-w-0 pl-7 sm:pl-10"
             >
               {/* Timeline rail */}
               <div
-                className="absolute bottom-2 left-1.75 top-2 w-px bg-border sm:left-2.75"
+                className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
                 aria-hidden="true"
               />
               <div
-                className="absolute left-0 top-2 flex size-3.75 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"
+                className="absolute left-0 top-2 flex size-3.5 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"
                 aria-hidden="true"
               >
                 <span className="size-1.5 rounded-full bg-accent sm:size-2" />

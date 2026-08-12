@@ -46,6 +46,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   html.has-custom-cursor,
@@ -57,6 +58,7 @@
     @apply bg-bg text-fg font-sans antialiased;
     margin: 0;
     min-width: 320px;
+    overflow-x: clip;
   }
 
   ::selection {

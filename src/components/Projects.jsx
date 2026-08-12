@@ -14,14 +14,23 @@ import {
   staggerContainerVariants,
 } from '../lib/motion'
 
+function canUseLayoutMorph() {
+  if (typeof window === 'undefined') return false
+  if (window.matchMedia('(pointer: coarse)').matches) return false
+  return (
+    window.matchMedia('(pointer: fine)').matches &&
+    window.matchMedia('(min-width: 768px)').matches
+  )
+}
+
 function ProjectCardFace({ project, compact = false }) {
   return (
     <>
       <div className="mb-4 flex items-start justify-between gap-3">
-        <span className="inline-flex rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-accent">
+        <span className="inline-flex max-w-[70%] rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium wrap-break-word text-accent">
           {project.stack}
         </span>
-        <span className="font-mono text-xs text-fg-muted">{project.year}</span>
+        <span className="shrink-0 font-mono text-xs text-fg-muted">{project.year}</span>
       </div>
 
       <h3
@@ -32,7 +41,7 @@ function ProjectCardFace({ project, compact = false }) {
         {project.name}
       </h3>
       <p
-        className={`mt-2 leading-relaxed text-fg-muted ${
+        className={`mt-2 text-pretty leading-relaxed text-fg-muted ${
           compact ? 'flex-1 text-sm' : 'mt-4 text-base sm:text-lg'
         }`}
       >
@@ -42,9 +51,9 @@ function ProjectCardFace({ project, compact = false }) {
   )
 }
 
-function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
+function ProjectDetail({ project, onClose, layoutId, useMorph }) {
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-8">
+    <div className="fixed inset-0 z-60 flex items-end justify-center p-0 sm:items-center sm:p-8">
       <motion.div
         className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
         initial={{ opacity: 0 }}
@@ -59,35 +68,35 @@ function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`project-dialog-${project.id}`}
-        layoutId={reduceMotion ? undefined : layoutId}
+        layoutId={useMorph ? layoutId : undefined}
         transition={
-          reduceMotion
-            ? { duration: 0 }
-            : { layout: { duration: duration.base, ease } }
+          useMorph
+            ? { layout: { duration: duration.base, ease } }
+            : { duration: duration.fast, ease }
         }
-        initial={reduceMotion ? { opacity: 0, scale: 0.96 } : false}
-        animate={reduceMotion ? { opacity: 1, scale: 1 } : undefined}
-        exit={reduceMotion ? { opacity: 0, scale: 0.96 } : undefined}
-        className="relative z-10 flex max-h-[min(90vh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-bg-elevated p-6 shadow-[0_24px_80px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:p-8"
+        initial={useMorph ? false : { opacity: 0, y: 24 }}
+        animate={useMorph ? undefined : { opacity: 1, y: 0 }}
+        exit={useMorph ? undefined : { opacity: 0, y: 16 }}
+        className="relative z-10 flex max-h-[min(92dvh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-elevated p-6 shadow-[0_24px_80px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:rounded-lg sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close project details"
-          className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent"
+          className="absolute right-3 top-3 inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent sm:right-4 sm:top-4"
         >
           <X size={18} strokeWidth={1.75} />
         </button>
 
-        <div id={`project-dialog-${project.id}`}>
+        <div id={`project-dialog-${project.id}`} className="pr-10">
           <ProjectCardFace project={project} />
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...revealTransition, delay: reduceMotion ? 0 : 0.15 }}
+          transition={{ ...revealTransition, delay: useMorph ? 0.15 : 0 }}
           className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6"
         >
           <span className="text-xs font-medium uppercase tracking-[0.16em] text-fg-muted">
@@ -101,7 +110,7 @@ function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...revealTransition, delay: reduceMotion ? 0 : 0.22 }}
+          transition={{ ...revealTransition, delay: useMorph ? 0.22 : 0.05 }}
           className="mt-6"
         >
           {project.url && project.url !== '#' ? (
@@ -109,13 +118,13 @@ function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
             >
               Open project
               <ArrowUpRight size={15} strokeWidth={2} />
             </a>
           ) : (
-            <span className="inline-flex items-center gap-2 rounded-md border border-border px-5 py-2.5 text-sm font-medium text-fg-muted">
+            <span className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-5 py-2.5 text-sm font-medium text-fg-muted">
               Link coming soon
               <ArrowUpRight size={15} strokeWidth={1.75} />
             </span>
@@ -128,11 +137,29 @@ function ProjectDetail({ project, onClose, layoutId, reduceMotion }) {
 
 export default function Projects() {
   const [selectedId, setSelectedId] = useState(null)
+  const [useMorph, setUseMorph] = useState(false)
   const reduceMotion = useReducedMotion()
 
   const selected = projects.find((p) => p.id === selectedId) ?? null
+  const morphEnabled = useMorph && !reduceMotion
 
   const close = useCallback(() => setSelectedId(null), [])
+
+  useEffect(() => {
+    const update = () => setUseMorph(canUseLayoutMorph())
+    update()
+    const fine = window.matchMedia('(pointer: fine)')
+    const coarse = window.matchMedia('(pointer: coarse)')
+    const md = window.matchMedia('(min-width: 768px)')
+    fine.addEventListener('change', update)
+    coarse.addEventListener('change', update)
+    md.addEventListener('change', update)
+    return () => {
+      fine.removeEventListener('change', update)
+      coarse.removeEventListener('change', update)
+      md.removeEventListener('change', update)
+    }
+  }, [])
 
   useEffect(() => {
     if (!selected) return undefined
@@ -181,7 +208,7 @@ export default function Projects() {
         </motion.div>
 
         <motion.ul
-          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
           variants={staggerContainerVariants}
           initial="hidden"
           whileInView="visible"
@@ -192,10 +219,10 @@ export default function Projects() {
             const layoutId = `project-card-${project.id}`
 
             return (
-              <motion.li key={project.id} variants={fadeUpVariants} className="min-h-46">
+              <motion.li key={project.id} variants={fadeUpVariants} className="min-h-46 min-w-0">
                 {isOpen ? (
                   <div
-                    className="h-full rounded-lg border border-transparent p-6 opacity-0"
+                    className="h-full rounded-lg border border-transparent p-5 opacity-0 sm:p-6"
                     aria-hidden="true"
                   >
                     <ProjectCardFace project={project} compact />
@@ -203,22 +230,22 @@ export default function Projects() {
                 ) : (
                   <motion.button
                     type="button"
-                    layoutId={reduceMotion ? undefined : layoutId}
+                    layoutId={morphEnabled ? layoutId : undefined}
                     transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { layout: { duration: duration.base, ease } }
+                      morphEnabled
+                        ? { layout: { duration: duration.base, ease } }
+                        : { duration: 0 }
                     }
                     onClick={() => setSelectedId(project.id)}
-                    className="group flex h-full w-full flex-col rounded-lg border border-border bg-bg-elevated p-6 text-left transition duration-300 hover:-translate-y-1 hover:scale-[1.015] hover:border-accent/40 hover:shadow-[0_16px_40px_color-mix(in_srgb,var(--color-accent)_12%,transparent)]"
+                    className="group flex h-full w-full flex-col rounded-lg border border-border bg-bg-elevated p-5 text-left transition duration-300 hover:border-accent/40 hover:shadow-[0_16px_40px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:p-6 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:scale-[1.015]"
                   >
                     <ProjectCardFace project={project} compact />
-                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-fg-muted transition-colors group-hover:text-accent">
+                    <span className="mt-5 inline-flex min-h-9 items-center gap-1 text-sm font-medium text-fg-muted transition-colors group-hover:text-accent">
                       View details
                       <ArrowUpRight
                         size={15}
                         strokeWidth={1.75}
-                        className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        className="transition-transform [@media(hover:hover)]:group-hover:translate-x-0.5 [@media(hover:hover)]:group-hover:-translate-y-0.5"
                       />
                     </span>
                   </motion.button>
@@ -236,7 +263,7 @@ export default function Projects() {
             project={selected}
             onClose={close}
             layoutId={`project-card-${selected.id}`}
-            reduceMotion={!!reduceMotion}
+            useMorph={morphEnabled}
           />
         )}
       </AnimatePresence>

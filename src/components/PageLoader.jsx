@@ -49,8 +49,13 @@ export default function PageLoader({ onComplete }) {
       return undefined
     }
 
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     const hold = window.setTimeout(() => setVisible(false), 480)
-    return () => window.clearTimeout(hold)
+    return () => {
+      window.clearTimeout(hold)
+      document.body.style.overflow = prevOverflow
+    }
   }, [reduceMotion, complete])
 
   return (
