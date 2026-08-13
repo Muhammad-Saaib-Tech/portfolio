@@ -1,10 +1,66 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, Moon, MonitorPlay, Sun, X } from 'lucide-react'
+import {
+  Briefcase,
+  Code2,
+  FolderGit2,
+  GraduationCap,
+  Mail,
+  Menu,
+  MonitorPlay,
+  Moon,
+  Sun,
+  User,
+  X,
+} from 'lucide-react'
 import { navLinks, profile } from '../data/content'
 import { useTheme } from '../context/ThemeContext'
 import { usePresentation } from '../context/PresentationContext'
 import { revealTransitionFast, stagger } from '../lib/motion'
+
+const navIcons = {
+  about: User,
+  skills: Code2,
+  experience: Briefcase,
+  projects: FolderGit2,
+  education: GraduationCap,
+  contact: Mail,
+}
+
+const navIndicatorSpring = {
+  type: 'spring',
+  bounce: 0.18,
+  duration: 0.4,
+}
+
+const iconSpring = {
+  type: 'spring',
+  bounce: 0.2,
+  duration: 0.35,
+}
+
+function NavIcon({ id, active, size = 16 }) {
+  const Icon = navIcons[id]
+  if (!Icon) return null
+
+  return (
+    <motion.span
+      className="inline-flex shrink-0"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.85 }}
+      transition={iconSpring}
+    >
+      <Icon
+        size={size}
+        strokeWidth={1.75}
+        className={`transition-colors duration-200 ${
+          active ? 'text-accent' : 'text-fg-muted group-hover:text-accent'
+        }`}
+        aria-hidden="true"
+      />
+    </motion.span>
+  )
+}
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
@@ -69,6 +125,7 @@ export default function Navbar() {
 
   const handleNavClick = (id) => {
     setMenuOpen(false)
+    setActiveId(id === 'home' ? '' : id)
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
@@ -106,20 +163,24 @@ export default function Navbar() {
                     e.preventDefault()
                     handleNavClick(link.id)
                   }}
-                  className={`relative inline-flex min-h-11 items-center rounded-md px-3 text-sm font-medium transition-colors ${
+                  className={`group relative inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? 'text-accent'
-                      : 'text-fg-muted hover:text-fg'
+                      ? 'font-semibold text-accent'
+                      : 'font-medium text-fg-muted hover:text-fg'
                   }`}
                 >
-                  {link.label}
-                  {isActive && (
+                  {isActive ? (
                     <motion.span
-                      layoutId="nav-indicator"
-                      className="absolute inset-x-2 bottom-2 h-0.5 rounded-full bg-accent"
-                      transition={revealTransitionFast}
+                      layoutId="navIndicator"
+                      className="absolute inset-0 rounded-md bg-accent-muted"
+                      transition={navIndicatorSpring}
+                      aria-hidden="true"
                     />
-                  )}
+                  ) : null}
+                  <span className="relative z-10 inline-flex items-center gap-2">
+                    <NavIcon id={link.id} active={isActive} />
+                    {link.label}
+                  </span>
                 </a>
               </li>
             )
@@ -175,30 +236,36 @@ export default function Navbar() {
             className="overflow-hidden border-t border-border bg-bg lg:hidden"
           >
             <ul className="flex max-h-[min(70dvh,calc(100dvh-4rem))] flex-col gap-0.5 overflow-y-auto px-5 py-3">
-              {navLinks.map((link, i) => (
-                <motion.li
-                  key={link.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    delay: stagger.items * 0.65 * i,
-                    ...revealTransitionFast,
-                  }}
-                >
-                  <a
-                    href={`#${link.id}`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleNavClick(link.id)
+              {navLinks.map((link, i) => {
+                const isActive = activeId === link.id
+                return (
+                  <motion.li
+                    key={link.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: stagger.items * 0.65 * i,
+                      ...revealTransitionFast,
                     }}
-                    className={`flex min-h-11 items-center rounded-md px-3 text-base font-medium ${
-                      activeId === link.id ? 'bg-accent-muted text-accent' : 'text-fg-muted'
-                    }`}
                   >
-                    {link.label}
-                  </a>
-                </motion.li>
-              ))}
+                    <a
+                      href={`#${link.id}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleNavClick(link.id)
+                      }}
+                      className={`group flex min-h-11 items-center gap-3 rounded-md px-3 text-base transition-colors ${
+                        isActive
+                          ? 'bg-accent-muted font-semibold text-accent'
+                          : 'font-medium text-fg-muted active:bg-accent-muted/50'
+                      }`}
+                    >
+                      <NavIcon id={link.id} active={isActive} size={18} />
+                      {link.label}
+                    </a>
+                  </motion.li>
+                )
+              })}
             </ul>
           </motion.div>
         )}
