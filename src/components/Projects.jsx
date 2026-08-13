@@ -7,15 +7,15 @@ import Heading from './Heading'
 import {
   duration,
   ease,
-  fadeUpVariants,
   getRevealProps,
   headerVariants,
-  presentPopItem,
-  presentSimpleFade,
-  presentStaggerFast,
+  projectCardDelay,
+  projectPopVariants,
   revealTransition,
   revealTransitionFast,
-  staggerContainerVariants,
+  scrollVariants,
+  scrollViewport,
+  simpleFadeVariants,
 } from '../lib/motion'
 
 function canUseLayoutMorph() {
@@ -73,6 +73,53 @@ function ProjectCardFace({ project, compact = false }) {
           {project.stack}
         </span>
       ) : null}
+    </>
+  )
+}
+
+function ProjectsCondensed() {
+  return (
+    <>
+      <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
+        Projects
+      </p>
+      <Heading
+        as="h2"
+        className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
+      >
+        Selected work
+      </Heading>
+
+      <ul className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+        {projects.map((project) => (
+          <li
+            key={project.id}
+            className="min-w-[200px] shrink-0 rounded-lg border border-border bg-bg-elevated p-3.5 sm:min-w-0"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <TypeTag type={project.type} className="text-[10px]" />
+              <span className="shrink-0 font-mono text-[10px] text-fg-muted">
+                {project.year}
+              </span>
+            </div>
+            <h3 className="mt-2 font-display text-sm font-semibold text-fg">
+              {project.name}
+            </h3>
+            <p className="mt-1 line-clamp-2 text-xs leading-snug text-fg-muted">
+              {project.description}
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-1">
+              {stackBadges(project.stack).map((tech) => (
+                <li key={tech}>
+                  <span className="inline-flex rounded-full border border-accent/30 bg-accent-muted px-2 py-0.5 text-[10px] font-medium text-accent">
+                    {tech}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
     </>
   )
 }
@@ -201,27 +248,39 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
   )
 }
 
-export default function Projects({ presentation = false }) {
+export default function Projects({
+  presentation = false,
+  condensed = false,
+  flowMode = false,
+}) {
   const [selectedId, setSelectedId] = useState(null)
   const [useMorph, setUseMorph] = useState(false)
   const reduceMotion = useReducedMotion()
 
   const selected = projects.find((p) => p.id === selectedId) ?? null
-  const morphEnabled = useMorph && !reduceMotion && !presentation
-  const cardVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentPopItem
-      : fadeUpVariants
-  const gridVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentStaggerFast
-      : staggerContainerVariants
+  const morphEnabled = useMorph && !reduceMotion && !presentation && !condensed
+  const skipMotion = flowMode
+  const headerV = skipMotion
+    ? undefined
+    : scrollVariants(headerVariants, reduceMotion)
+  const cardV = skipMotion
+    ? undefined
+    : scrollVariants(projectPopVariants, reduceMotion)
+  const gridV = skipMotion
+    ? undefined
+    : reduceMotion
+      ? simpleFadeVariants
+      : {
+          hidden: {},
+          visible: {
+            transition: { staggerChildren: 0, delayChildren: 0 },
+          },
+        }
 
   const close = useCallback(() => setSelectedId(null), [])
 
   useEffect(() => {
+    if (presentation && condensed) return undefined
     const update = () => setUseMorph(canUseLayoutMorph())
     update()
     const fine = window.matchMedia('(pointer: fine)')
@@ -235,9 +294,10 @@ export default function Projects({ presentation = false }) {
       coarse.removeEventListener('change', update)
       md.removeEventListener('change', update)
     }
-  }, [])
+  }, [presentation, condensed])
 
   useEffect(() => {
+    if (presentation && condensed) return undefined
     if (!selected) return undefined
 
     const onKey = (e) => {
@@ -254,7 +314,15 @@ export default function Projects({ presentation = false }) {
       document.removeEventListener('keydown', onKey)
       if (!presentation) document.body.style.overflow = prev
     }
-  }, [selected, close, presentation])
+  }, [selected, close, presentation, condensed])
+
+  if (presentation && condensed) {
+    return (
+      <section className="relative w-full py-6 sm:py-8" aria-label="Projects">
+        <ProjectsCondensed />
+      </section>
+    )
+  }
 
   return (
     <section
@@ -266,8 +334,9 @@ export default function Projects({ presentation = false }) {
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={reduceMotion ? presentSimpleFade : headerVariants}
-          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
+          variants={headerV}
+          initial={skipMotion ? false : 'hidden'}
+          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -288,16 +357,28 @@ export default function Projects({ presentation = false }) {
 
         <motion.ul
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-          variants={gridVariants}
-          {...getRevealProps(presentation, { once: true, amount: 0.1 })}
+          variants={gridV}
+          initial={skipMotion ? false : 'hidden'}
+          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
         >
-          {projects.map((project) => {
+          {projects.map((project, index) => {
             const isOpen = selectedId === project.id
             const layoutId = `project-card-${project.id}`
 
             return (
-              <motion.li key={project.id} variants={cardVariants} className="min-h-46 min-w-0">
-                {isOpen ? (
+              <motion.li
+                key={project.id}
+                variants={cardV}
+                transition={
+                  skipMotion || reduceMotion
+                    ? undefined
+                    : {
+                        ...revealTransition,
+                        delay: projectCardDelay(index, 3),
+                      }
+                }
+                className="min-h-46 min-w-0 origin-center"
+              >                {isOpen ? (
                   <div
                     className="h-full rounded-lg border border-transparent p-5 opacity-0 sm:p-6"
                     aria-hidden="true"

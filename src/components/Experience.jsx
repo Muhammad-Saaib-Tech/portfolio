@@ -1,17 +1,22 @@
 // Experience — vertical job timeline with collapsible project achievement lists.
-import { useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
 import { ChevronDown, MapPin } from 'lucide-react'
 import { experience } from '../data/content'
 import Heading from './Heading'
 import {
-  fadeLeftVariants,
   getRevealProps,
   headerVariants,
-  presentSimpleFade,
-  presentStaggerFast,
-  presentTimelineItem,
   revealTransitionFast,
+  scrollVariants,
+  scrollViewport,
+  timelineEntryVariants,
 } from '../lib/motion'
 
 function ProjectBlock({ project, defaultOpen = false }) {
@@ -72,13 +77,122 @@ function ProjectBlock({ project, defaultOpen = false }) {
   )
 }
 
-export default function Experience({ presentation = false }) {
+function ExperienceCondensed() {
+  return (
+    <>
+      <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
+        Experience
+      </p>
+      <Heading
+        as="h2"
+        className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
+      >
+        Where I've built
+      </Heading>
+
+      <div className="mt-6 space-y-5">
+        {experience.map((job) => (
+          <article
+            key={job.id}
+            className="rounded-lg border border-border bg-bg-elevated p-4 sm:p-5"
+          >
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <h3 className="font-display text-base font-semibold text-fg sm:text-lg">
+                {job.role}
+              </h3>
+              <span className="text-xs font-medium text-accent sm:text-sm">
+                {job.period}
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-fg-muted">{job.company}</p>
+            <p className="mt-1 flex items-center gap-1 text-xs text-fg-muted">
+              <MapPin size={12} className="text-accent" strokeWidth={1.75} />
+              {job.location}
+            </p>
+
+            <ul className="mt-3 space-y-3">
+              {job.projects.map((project) => (
+                <li
+                  key={project.name}
+                  className="border-t border-border pt-3 first:border-0 first:pt-0"
+                >
+                  <h4 className="text-sm font-semibold text-fg">{project.name}</h4>
+                  {project.subtitle ? (
+                    <p className="text-xs text-accent">{project.subtitle}</p>
+                  ) : null}
+                  <ul className="mt-1.5 space-y-1">
+                    {project.bullets.slice(0, 2).map((bullet) => (
+                      <li
+                        key={bullet}
+                        className="relative pl-3 text-xs leading-snug text-fg-muted before:absolute before:left-0 before:top-[0.45em] before:size-1 before:rounded-full before:bg-accent"
+                      >
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </>
+  )
+}
+
+function TimelineRail({ trackRef, reduceMotion }) {
+  const { scrollYProgress } = useScroll({
+    target: trackRef,
+    offset: ['start 0.85', 'end 0.35'],
+  })
+  const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1])
+
+  if (reduceMotion) {
+    return (
+      <div
+        className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
+        aria-hidden="true"
+      />
+    )
+  }
+
+  return (
+    <div
+      className="absolute bottom-2 left-[0.4375rem] top-2 w-px overflow-hidden sm:left-2.75"
+      aria-hidden="true"
+    >
+      <div className="absolute inset-0 bg-border/40" />
+      <motion.div
+        className="absolute inset-x-0 top-0 h-full origin-top bg-accent/70"
+        style={{ scaleY }}
+      />
+    </div>
+  )
+}
+
+export default function Experience({
+  presentation = false,
+  condensed = false,
+  flowMode = false,
+}) {
   const reduceMotion = useReducedMotion()
-  const itemVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentTimelineItem
-      : fadeLeftVariants
+  const skipMotion = flowMode
+  const trackRef = useRef(null)
+
+  if (presentation && condensed) {
+    return (
+      <section className="relative w-full py-6 sm:py-8" aria-label="Experience">
+        <ExperienceCondensed />
+      </section>
+    )
+  }
+
+  const headerV = skipMotion
+    ? undefined
+    : scrollVariants(headerVariants, reduceMotion)
+  const entryV = skipMotion
+    ? undefined
+    : scrollVariants(timelineEntryVariants, reduceMotion)
 
   return (
     <section
@@ -90,8 +204,9 @@ export default function Experience({ presentation = false }) {
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={reduceMotion ? presentSimpleFade : headerVariants}
-          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
+          variants={headerV}
+          initial={skipMotion ? false : 'hidden'}
+          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -110,28 +225,34 @@ export default function Experience({ presentation = false }) {
           </p>
         </motion.div>
 
-        <motion.div
-          className="relative mt-12"
-          variants={
-            presentation && !reduceMotion ? presentStaggerFast : undefined
-          }
-          {...(presentation
-            ? getRevealProps(true)
-            : {})}
-        >
-          {experience.map((job) => (
+        <div ref={trackRef} className="relative mt-12">
+          {!skipMotion && !presentation ? (
+            <TimelineRail trackRef={trackRef} reduceMotion={reduceMotion} />
+          ) : (
+            <div
+              className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
+              aria-hidden="true"
+            />
+          )}
+
+          {experience.map((job, jobIndex) => (
             <motion.article
               key={job.id}
-              variants={itemVariants}
-              {...(presentation
+              variants={entryV}
+              initial={skipMotion ? false : 'hidden'}
+              {...(skipMotion
                 ? {}
-                : getRevealProps(false, { once: true, amount: 0.2 }))}
+                : getRevealProps(presentation, {
+                    ...scrollViewport,
+                    amount: 0.15,
+                  }))}
+              transition={
+                skipMotion || reduceMotion
+                  ? undefined
+                  : { delay: jobIndex * 0.1 }
+              }
               className="relative min-w-0 pl-7 sm:pl-10"
             >
-              <div
-                className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
-                aria-hidden="true"
-              />
               <div
                 className="absolute left-0 top-2 flex size-3.5 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"
                 aria-hidden="true"
@@ -160,7 +281,7 @@ export default function Experience({ presentation = false }) {
               </div>
             </motion.article>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

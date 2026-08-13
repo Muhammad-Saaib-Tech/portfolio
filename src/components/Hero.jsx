@@ -15,9 +15,44 @@ import {
   stagger,
 } from '../lib/motion'
 
-export default function Hero({ introReady = true, presentation = false }) {
+export default function Hero({ introReady = true, presentation = false, flowMode = false }) {
   const sectionRef = useRef(null)
   const titleWords = profile.title.split(' ')
+
+  if (flowMode) {
+    return (
+      <section className="relative w-full py-4 sm:py-6" aria-label="Introduction">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute inset-0 bg-bg" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_srgb,var(--color-fg)_7%,transparent),transparent_55%)]" />
+          <div className="hero-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.22]" />
+        </div>
+        <div className="relative z-10 grid w-full items-center gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-12">
+          <div className="min-w-0">
+            <p className="mb-3 flex items-center gap-2 text-sm font-medium text-fg-muted">
+              <MapPin size={15} className="shrink-0 text-accent" strokeWidth={1.75} />
+              {profile.location}
+            </p>
+            <Heading
+              as="h1"
+              className="max-w-[16ch] text-[clamp(1.75rem,1.1rem+4.2vw,2.75rem)] font-extrabold leading-[1.12] tracking-tight wrap-break-word text-fg"
+            >
+              {profile.name}
+            </Heading>
+            <h2 className="mt-2 font-display text-[clamp(1.1rem,0.9rem+1.5vw,1.65rem)] font-semibold tracking-tight text-accent">
+              {profile.title}
+            </h2>
+            <p className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-fg-muted sm:text-base">
+              {profile.tagline}
+            </p>
+          </div>
+          <div className="hidden min-w-0 items-center justify-center lg:flex lg:justify-end">
+            <HeroVisual introReady />
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section

@@ -95,12 +95,29 @@ export const ambientLoop = {
   ease: 'easeInOut',
 }
 
+/** Canonical scroll-trigger viewport for normal page scrolling */
+export const scrollViewport = { once: true, amount: 0.2 }
+
+/** Opacity-only fallback when prefers-reduced-motion is on */
+export const simpleFadeVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: duration.fast, ease },
+  },
+}
+
 /** whileInView vs forced animate for Presentation Mode */
-export function getRevealProps(presentation, viewport = { once: true, amount: 0.25 }) {
+export function getRevealProps(presentation, viewport = scrollViewport) {
   if (presentation) {
     return { initial: 'hidden', animate: 'visible' }
   }
   return { initial: 'hidden', whileInView: 'visible', viewport }
+}
+
+/** Pick full scroll variants or reduced-motion fade */
+export function scrollVariants(full, reduceMotion) {
+  return reduceMotion ? simpleFadeVariants : full
 }
 
 /** Presentation-mode theatrical variants (site ease, more travel) */
@@ -198,16 +215,115 @@ export const heroItemVariants = {
   },
 }
 
-/** Panel with nested chip stagger (Skills) */
+/** Panel with nested chip stagger (Skills) — scale-up on scroll */
 export const panelVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: duration.base,
+      ease,
+      staggerChildren: stagger.items,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+/** Skills chip stagger inside a panel */
+export const skillChipVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: revealTransitionFast,
+  },
+}
+
+/** Skills grid container — row-by-row panel stagger */
+export const skillsGridVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: stagger.delay,
+    },
+  },
+}
+
+/** Projects card pop (scale from 90%) */
+export const projectPopVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: revealTransition,
+  },
+}
+
+/** Diagonal-ish stagger for a 3-col project grid */
+export function projectCardDelay(index, cols = 3) {
+  const row = Math.floor(index / cols)
+  const col = index % cols
+  return (row + col) * 0.08
+}
+
+/** Experience timeline entry — slide up */
+export const timelineEntryVariants = {
   hidden: { opacity: 0, y: 28 },
   visible: {
     opacity: 1,
     y: 0,
+    transition: revealTransition,
+  },
+}
+
+/** Education subtle 3D tilt-in */
+export const educationTiltVariants = {
+  hidden: { opacity: 0, rotateX: 8, y: 16 },
+  visible: {
+    opacity: 1,
+    rotateX: 0,
+    y: 0,
+    transition: { duration: duration.base, ease },
+  },
+}
+
+/** Contact link / CTA spring from below */
+export const contactSpringVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 320, damping: 28, mass: 0.7 },
+  },
+}
+
+export const contactStaggerVariants = {
+  hidden: {},
+  visible: {
     transition: {
-      ...revealTransition,
-      staggerChildren: stagger.items,
-      delayChildren: 0.12,
+      staggerChildren: 0.09,
+      delayChildren: 0.06,
     },
+  },
+}
+
+/** About dual-column scroll leads */
+export const aboutLeftVariants = {
+  hidden: { opacity: 0, x: -36 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: duration.base, ease },
+  },
+}
+
+export const aboutRightVariants = {
+  hidden: { opacity: 0, x: 36 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: duration.base, ease, delay: 0.12 },
   },
 }

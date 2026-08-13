@@ -7,11 +7,11 @@ import {
   getRevealProps,
   headerVariants,
   panelVariants,
-  presentPopItem,
-  presentSimpleFade,
-  presentStaggerFast,
-  staggerContainerVariants,
-  staggerItemVariants,
+  scrollVariants,
+  scrollViewport,
+  skillChipVariants,
+  skillsGridVariants,
+  simpleFadeVariants,
 } from '../lib/motion'
 
 const categoryIcons = {
@@ -21,38 +21,94 @@ const categoryIcons = {
   'DevOps / Tools': Container,
 }
 
-const presentPanelVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.55,
-      ease: [0.22, 1, 0.36, 1],
-      staggerChildren: 0.06,
-      delayChildren: 0.1,
-    },
-  },
+const CONDENSED_TAG_LIMIT = 4
+
+function SkillsCondensed() {
+  return (
+    <>
+      <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
+        Skills
+      </p>
+      <Heading
+        as="h2"
+        className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
+      >
+        Tools I ship with
+      </Heading>
+
+      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {skills.map((group) => {
+          const Icon = categoryIcons[group.category] ?? Server
+          const visible = group.items.slice(0, CONDENSED_TAG_LIMIT)
+          const extra = group.items.length - visible.length
+
+          return (
+            <li
+              key={group.category}
+              className="rounded-lg border border-border bg-bg-elevated p-4"
+            >
+              <div className="mb-2.5 flex items-center gap-2">
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent">
+                  <Icon size={15} strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <h3 className="font-display text-sm font-semibold text-fg">
+                  {group.category}
+                </h3>
+              </div>
+              <ul className="flex flex-wrap gap-1.5" aria-label={`${group.category} skills`}>
+                {visible.map((skill) => (
+                  <li key={skill}>
+                    <span className="inline-flex rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-fg">
+                      {skill}
+                    </span>
+                  </li>
+                ))}
+                {extra > 0 ? (
+                  <li>
+                    <span className="inline-flex rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-fg-muted">
+                      +{extra}
+                    </span>
+                  </li>
+                ) : null}
+              </ul>
+            </li>
+          )
+        })}
+      </ul>
+    </>
+  )
 }
 
-export default function Skills({ presentation = false }) {
+export default function Skills({
+  presentation = false,
+  condensed = false,
+  flowMode = false,
+}) {
   const reduceMotion = useReducedMotion()
-  const gridVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentStaggerFast
-      : staggerContainerVariants
-  const cardVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentPanelVariants
-      : panelVariants
-  const chipVariants = reduceMotion
-    ? presentSimpleFade
-    : presentation
-      ? presentPopItem
-      : staggerItemVariants
+  const skipMotion = flowMode
+
+  if (presentation && condensed) {
+    return (
+      <section className="relative w-full py-6 sm:py-8" aria-label="Skills">
+        <SkillsCondensed />
+      </section>
+    )
+  }
+
+  const headerV = skipMotion
+    ? undefined
+    : scrollVariants(headerVariants, reduceMotion)
+  const gridV = skipMotion
+    ? undefined
+    : reduceMotion
+      ? simpleFadeVariants
+      : skillsGridVariants
+  const panelV = skipMotion
+    ? undefined
+    : scrollVariants(panelVariants, reduceMotion)
+  const chipV = skipMotion
+    ? undefined
+    : scrollVariants(skillChipVariants, reduceMotion)
 
   return (
     <section
@@ -64,8 +120,9 @@ export default function Skills({ presentation = false }) {
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={reduceMotion ? presentSimpleFade : headerVariants}
-          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
+          variants={headerV}
+          initial={skipMotion ? false : 'hidden'}
+          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -86,8 +143,9 @@ export default function Skills({ presentation = false }) {
 
         <motion.ul
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2"
-          variants={gridVariants}
-          {...getRevealProps(presentation, { once: true, amount: 0.15 })}
+          variants={gridV}
+          initial={skipMotion ? false : 'hidden'}
+          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
         >
           {skills.map((group) => {
             const Icon = categoryIcons[group.category] ?? Server
@@ -95,8 +153,8 @@ export default function Skills({ presentation = false }) {
             return (
               <motion.li
                 key={group.category}
-                variants={cardVariants}
-                className="group rounded-lg border border-border bg-bg-elevated p-5 transition duration-300 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-7 [@media(hover:hover)]:hover:-translate-y-0.5"
+                variants={panelV}
+                className="group origin-center rounded-lg border border-border bg-bg-elevated p-5 transition duration-300 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-7 [@media(hover:hover)]:hover:-translate-y-0.5"
               >
                 <div className="mb-5 flex items-center gap-3">
                   <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent transition-colors group-hover:border-accent/40 group-hover:bg-accent-muted">
@@ -109,7 +167,7 @@ export default function Skills({ presentation = false }) {
 
                 <ul className="flex flex-wrap gap-2.5" aria-label={`${group.category} skills`}>
                   {group.items.map((skill) => (
-                    <motion.li key={skill} variants={chipVariants}>
+                    <motion.li key={skill} variants={chipV}>
                       <span className="inline-flex min-h-9 max-w-full items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-left text-sm font-medium wrap-break-word text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                         {skill}
                       </span>
