@@ -61,6 +61,7 @@ export default function Hero({ introReady = true, presentation = false, flowMode
     <section
       ref={sectionRef}
       id={presentation ? undefined : 'home'}
+      data-starfield={ENABLE_HERO_STARFIELD && !presentation ? 'enabled' : 'off'}
       className={`relative flex items-center overflow-hidden ${
         presentation ? 'min-h-full py-10' : 'min-h-dvh'
       }`}

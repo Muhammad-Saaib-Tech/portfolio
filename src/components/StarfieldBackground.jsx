@@ -1,20 +1,34 @@
 // StarfieldBackground — subtle Three.js particle field for Hero (optional enhancement).
-// Toggle: ENABLE_HERO_STARFIELD. No nebula/mountains/bloom/GSAP scroll scenes.
+// Self-contained rAF loop only — no scroll-linked camera. Toggle: ENABLE_HERO_STARFIELD.
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
-
 import { ENABLE_HERO_STARFIELD } from '../config/features'
 
 const STAR_COUNT = 2000
 const ROTATE_SPEED = 0.00012
+const MAX_DPR = 1.5
+const MOBILE_MAX_WIDTH = 768
+const MIN_CPU_CORES = 4
 
-function shouldEnableStarfield(reduceMotion) {
+function prefersReducedMotion() {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function isLowEndDevice() {
+  if (typeof window === 'undefined') return true
+  if (window.innerWidth < MOBILE_MAX_WIDTH) return true
+  const cores = navigator.hardwareConcurrency
+  if (typeof cores === 'number' && cores > 0 && cores < MIN_CPU_CORES) return true
+  return false
+}
+
+/** Gate Three.js — false means Hero keeps CSS gradient/grid background only */
+export function shouldEnableStarfield(reduceMotion) {
   if (!ENABLE_HERO_STARFIELD) return false
   if (typeof window === 'undefined') return false
-  if (reduceMotion) return false
-  if (window.innerWidth < 768) return false
-  const cores = navigator.hardwareConcurrency
-  if (typeof cores === 'number' && cores > 0 && cores < 4) return false
+  if (reduceMotion || prefersReducedMotion()) return false
+  if (isLowEndDevice()) return false
   return true
 }
 
@@ -40,8 +54,19 @@ export default function StarfieldBackground({ className = '' }) {
   const reduceMotion = useReducedMotion()
   const [active, setActive] = useState(false)
 
+  // Re-evaluate on reduced-motion, viewport width, and system motion preference
   useEffect(() => {
-    setActive(shouldEnableStarfield(reduceMotion))
+    const update = () => setActive(shouldEnableStarfield(reduceMotion))
+    update()
+
+    const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    motionMq.addEventListener('change', update)
+    window.addEventListener('resize', update)
+
+    return () => {
+      motionMq.removeEventListener('change', update)
+      window.removeEventListener('resize', update)
+    }
   }, [reduceMotion])
 
   useEffect(() => {
@@ -75,7 +100,7 @@ export default function StarfieldBackground({ className = '' }) {
         alpha: true,
         powerPreference: 'low-power',
       })
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_DPR))
       renderer.setSize(width, height, false)
       renderer.setClearColor(0x000000, 0)
       mount.appendChild(renderer.domElement)
@@ -95,6 +120,7 @@ export default function StarfieldBackground({ className = '' }) {
         positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
         positions[i3 + 2] = radius * Math.cos(phi)
 
+        // Theme only: ~70% white/off-white, ~30% accent purple — no red/blue variation
         const useAccent = Math.random() < 0.3
         const brightness = 0.45 + Math.random() * 0.45
         if (useAccent) {
@@ -132,7 +158,7 @@ export default function StarfieldBackground({ className = '' }) {
         if (w < 1 || h < 1) return
         camera.aspect = w / h
         camera.updateProjectionMatrix()
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_DPR))
         renderer.setSize(w, h, false)
       }
 
@@ -142,6 +168,7 @@ export default function StarfieldBackground({ className = '' }) {
       const animate = () => {
         if (cancelled) return
         rafId = requestAnimationFrame(animate)
+        // Slow continuous rotation — not tied to scroll
         if (points) {
           points.rotation.y += ROTATE_SPEED
           points.rotation.x += ROTATE_SPEED * 0.25
@@ -181,6 +208,7 @@ export default function StarfieldBackground({ className = '' }) {
   return (
     <div
       ref={mountRef}
+      data-starfield="active"
       className={`pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-60 dark:opacity-80 ${className}`}
       aria-hidden="true"
     />
