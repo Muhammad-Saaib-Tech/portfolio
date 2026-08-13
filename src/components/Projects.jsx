@@ -9,13 +9,14 @@ import {
   ease,
   getRevealProps,
   headerVariants,
+  maskScaleVariants,
   projectCardDelay,
-  projectPopVariants,
   revealTransition,
   revealTransitionFast,
   scrollVariants,
   scrollViewport,
   simpleFadeVariants,
+  tourMaskScaleVariants,
 } from '../lib/motion'
 
 function canUseLayoutMorph() {
@@ -77,7 +78,9 @@ function ProjectCardFace({ project, compact = false }) {
   )
 }
 
-function ProjectsCondensed() {
+function ProjectsCondensed({ reduceMotion, tourActive }) {
+  const cardV = scrollVariants(tourMaskScaleVariants, reduceMotion)
+
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -90,11 +93,24 @@ function ProjectsCondensed() {
         Selected work
       </Heading>
 
-      <ul className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
-        {projects.map((project) => (
-          <li
+      <motion.ul
+        className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0, delayChildren: 0 } },
+        }}
+        {...getRevealProps(true, scrollViewport, tourActive)}
+      >
+        {projects.map((project, index) => (
+          <motion.li
             key={project.id}
-            className="min-w-[200px] shrink-0 rounded-lg border border-border bg-bg-elevated p-3.5 sm:min-w-0"
+            variants={cardV}
+            transition={
+              reduceMotion
+                ? undefined
+                : { delay: projectCardDelay(index, 3), duration: 0.45, ease }
+            }
+            className="min-w-[200px] shrink-0 origin-center rounded-lg border border-border bg-bg-elevated p-3.5 sm:min-w-0"
           >
             <div className="flex items-start justify-between gap-2">
               <TypeTag type={project.type} className="text-[10px]" />
@@ -117,9 +133,9 @@ function ProjectsCondensed() {
                 </li>
               ))}
             </ul>
-          </li>
+          </motion.li>
         ))}
-      </ul>
+      </motion.ul>
     </>
   )
 }
@@ -251,7 +267,7 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
 export default function Projects({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const [selectedId, setSelectedId] = useState(null)
   const [useMorph, setUseMorph] = useState(false)
@@ -259,23 +275,20 @@ export default function Projects({
 
   const selected = projects.find((p) => p.id === selectedId) ?? null
   const morphEnabled = useMorph && !reduceMotion && !presentation && !condensed
-  const skipMotion = flowMode
-  const headerV = skipMotion
-    ? undefined
-    : scrollVariants(headerVariants, reduceMotion)
-  const cardV = skipMotion
-    ? undefined
-    : scrollVariants(projectPopVariants, reduceMotion)
-  const gridV = skipMotion
-    ? undefined
-    : reduceMotion
-      ? simpleFadeVariants
-      : {
-          hidden: {},
-          visible: {
-            transition: { staggerChildren: 0, delayChildren: 0 },
-          },
-        }
+  const headerV = scrollVariants(headerVariants, reduceMotion)
+  const cardV = scrollVariants(
+    presentation ? tourMaskScaleVariants : maskScaleVariants,
+    reduceMotion,
+  )
+  const gridV = reduceMotion
+    ? simpleFadeVariants
+    : {
+        hidden: {},
+        visible: {
+          transition: { staggerChildren: 0, delayChildren: 0 },
+        },
+      }
+  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
 
   const close = useCallback(() => setSelectedId(null), [])
 
@@ -319,7 +332,7 @@ export default function Projects({
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Projects">
-        <ProjectsCondensed />
+        <ProjectsCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
       </section>
     )
   }
@@ -333,12 +346,7 @@ export default function Projects({
       aria-labelledby="projects-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div
-          variants={headerV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="max-w-2xl"
-        >
+        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Projects
           </p>
@@ -358,8 +366,7 @@ export default function Projects({
         <motion.ul
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
           variants={gridV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
+          {...reveal()}
         >
           {projects.map((project, index) => {
             const isOpen = selectedId === project.id
@@ -370,7 +377,7 @@ export default function Projects({
                 key={project.id}
                 variants={cardV}
                 transition={
-                  skipMotion || reduceMotion
+                  reduceMotion
                     ? undefined
                     : {
                         ...revealTransition,

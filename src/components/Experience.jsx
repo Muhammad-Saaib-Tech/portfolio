@@ -16,7 +16,8 @@ import {
   revealTransitionFast,
   scrollVariants,
   scrollViewport,
-  timelineEntryVariants,
+  tiltInUpVariants,
+  tourTiltVariants,
 } from '../lib/motion'
 
 function ProjectBlock({ project, defaultOpen = false }) {
@@ -77,7 +78,9 @@ function ProjectBlock({ project, defaultOpen = false }) {
   )
 }
 
-function ExperienceCondensed() {
+function ExperienceCondensed({ reduceMotion, tourActive }) {
+  const entryV = scrollVariants(tourTiltVariants, reduceMotion)
+
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -90,11 +93,20 @@ function ExperienceCondensed() {
         Where I've built
       </Heading>
 
-      <div className="mt-6 space-y-5">
-        {experience.map((job) => (
-          <article
+      <div
+        className="mt-6 space-y-5"
+        style={{ perspective: reduceMotion ? undefined : 1000 }}
+      >
+        {experience.map((job, jobIndex) => (
+          <motion.article
             key={job.id}
-            className="rounded-lg border border-border bg-bg-elevated p-4 sm:p-5"
+            variants={entryV}
+            {...getRevealProps(true, scrollViewport, tourActive)}
+            transition={
+              reduceMotion ? undefined : { delay: jobIndex * 0.08 }
+            }
+            className="origin-center rounded-lg border border-border bg-bg-elevated p-4 sm:p-5"
+            style={{ transformStyle: 'preserve-3d' }}
           >
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <h3 className="font-display text-base font-semibold text-fg sm:text-lg">
@@ -133,7 +145,7 @@ function ExperienceCondensed() {
                 </li>
               ))}
             </ul>
-          </article>
+          </motion.article>
         ))}
       </div>
     </>
@@ -173,26 +185,26 @@ function TimelineRail({ trackRef, reduceMotion }) {
 export default function Experience({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const reduceMotion = useReducedMotion()
-  const skipMotion = flowMode
   const trackRef = useRef(null)
 
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Experience">
-        <ExperienceCondensed />
+        <ExperienceCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
       </section>
     )
   }
 
-  const headerV = skipMotion
-    ? undefined
-    : scrollVariants(headerVariants, reduceMotion)
-  const entryV = skipMotion
-    ? undefined
-    : scrollVariants(timelineEntryVariants, reduceMotion)
+  const headerV = scrollVariants(headerVariants, reduceMotion)
+  const entryV = scrollVariants(
+    presentation ? tourTiltVariants : tiltInUpVariants,
+    reduceMotion,
+  )
+  const reveal = (vp = scrollViewport) =>
+    getRevealProps(presentation, vp, tourActive)
 
   return (
     <section
@@ -203,12 +215,7 @@ export default function Experience({
       aria-labelledby="experience-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div
-          variants={headerV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="max-w-2xl"
-        >
+        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Experience
           </p>
@@ -225,8 +232,14 @@ export default function Experience({
           </p>
         </motion.div>
 
-        <div ref={trackRef} className="relative mt-12">
-          {!skipMotion && !presentation ? (
+        <div
+          ref={trackRef}
+          className="relative mt-12"
+          style={{
+            perspective: reduceMotion ? undefined : 1200,
+          }}
+        >
+          {!presentation ? (
             <TimelineRail trackRef={trackRef} reduceMotion={reduceMotion} />
           ) : (
             <div
@@ -239,19 +252,12 @@ export default function Experience({
             <motion.article
               key={job.id}
               variants={entryV}
-              initial={skipMotion ? false : 'hidden'}
-              {...(skipMotion
-                ? {}
-                : getRevealProps(presentation, {
-                    ...scrollViewport,
-                    amount: 0.15,
-                  }))}
+              {...reveal({ ...scrollViewport, amount: 0.15 })}
               transition={
-                skipMotion || reduceMotion
-                  ? undefined
-                  : { delay: jobIndex * 0.1 }
+                reduceMotion ? undefined : { delay: jobIndex * 0.1 }
               }
-              className="relative min-w-0 pl-7 sm:pl-10"
+              className="relative min-w-0 origin-center pl-7 sm:pl-10"
+              style={{ transformStyle: 'preserve-3d' }}
             >
               <div
                 className="absolute left-0 top-2 flex size-3.5 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"

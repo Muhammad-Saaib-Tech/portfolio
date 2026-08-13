@@ -4,14 +4,17 @@ import { about, profile } from '../data/content'
 import Heading from './Heading'
 import ParallaxLayer from './ParallaxLayer'
 import {
-  aboutLeftVariants,
-  aboutRightVariants,
+  clipWipeVariants,
   getRevealProps,
+  headerVariants,
   scrollVariants,
   scrollViewport,
+  simpleFadeVariants,
   staggerContainerVariants,
   staggerItemVariants,
-  simpleFadeVariants,
+  tiltInRightVariants,
+  tourClipWipeVariants,
+  tourTiltVariants,
 } from '../lib/motion'
 
 const stackPreview = ['.NET Core', 'Angular', 'Blazor', 'PostgreSQL', 'RabbitMQ']
@@ -115,22 +118,24 @@ function Punct({ children }) {
 export default function About({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const sectionRef = useRef(null)
   const reduceMotion = useReducedMotion()
-  const skipMotion = flowMode
   void condensed
 
-  const leftVariants = skipMotion
-    ? undefined
-    : scrollVariants(aboutLeftVariants, reduceMotion)
-  const rightVariants = skipMotion
-    ? undefined
-    : scrollVariants(aboutRightVariants, reduceMotion)
-  const chipVariants = skipMotion
-    ? undefined
-    : scrollVariants(staggerItemVariants, reduceMotion)
+  const headerV = scrollVariants(headerVariants, reduceMotion)
+  const bioV = scrollVariants(
+    presentation ? tourClipWipeVariants : clipWipeVariants,
+    reduceMotion,
+  )
+  const cardV = scrollVariants(
+    presentation ? tourTiltVariants : tiltInRightVariants,
+    reduceMotion,
+  )
+  const chipVariants = scrollVariants(staggerItemVariants, reduceMotion)
+  const reveal = (vp = scrollViewport) =>
+    getRevealProps(presentation, vp, tourActive)
 
   return (
     <section
@@ -143,41 +148,34 @@ export default function About({
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <motion.div
-            variants={leftVariants}
-            initial={skipMotion ? false : 'hidden'}
-            {...(skipMotion
-              ? {}
-              : getRevealProps(presentation, scrollViewport))}
-            className="min-w-0"
-          >
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
-              About
-            </p>
-            <Heading
-              as="h2"
-              id={presentation ? undefined : 'about-heading'}
-              className="text-[clamp(1.75rem,1.4rem+1.5vw,2.25rem)] font-bold tracking-tight text-fg sm:text-4xl"
+          <div className="min-w-0">
+            <motion.div variants={headerV} {...reveal()}>
+              <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
+                About
+              </p>
+              <Heading
+                as="h2"
+                id={presentation ? undefined : 'about-heading'}
+                className="text-[clamp(1.75rem,1.4rem+1.5vw,2.25rem)] font-bold tracking-tight text-fg sm:text-4xl"
+              >
+                Building systems that last
+              </Heading>
+            </motion.div>
+
+            <motion.p
+              variants={bioV}
+              {...reveal()}
+              className="mt-6 text-pretty text-base leading-relaxed text-fg-muted sm:text-lg"
             >
-              Building systems that last
-            </Heading>
-            <p className="mt-6 text-pretty text-base leading-relaxed text-fg-muted sm:text-lg">
               {about.bio}
-            </p>
+            </motion.p>
 
             <motion.ul
               className="mt-8 flex flex-wrap gap-2.5"
               variants={
-                skipMotion
-                  ? undefined
-                  : reduceMotion
-                    ? simpleFadeVariants
-                    : staggerContainerVariants
+                reduceMotion ? simpleFadeVariants : staggerContainerVariants
               }
-              initial={skipMotion ? false : 'hidden'}
-              {...(skipMotion
-                ? {}
-                : getRevealProps(presentation, scrollViewport))}
+              {...reveal()}
               aria-label="Core technologies"
             >
               {about.techBadges.map((badge) => (
@@ -188,15 +186,11 @@ export default function About({
                 </motion.li>
               ))}
             </motion.ul>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={rightVariants}
-            initial={skipMotion ? false : 'hidden'}
-            {...(skipMotion
-              ? {}
-              : getRevealProps(presentation, scrollViewport))}
+          <div
             className="relative min-w-0"
+            style={{ perspective: reduceMotion ? undefined : 1000 }}
           >
             {!presentation ? (
               <ParallaxLayer
@@ -213,10 +207,15 @@ export default function About({
                 aria-hidden="true"
               />
             )}
-            <div className="relative">
+            <motion.div
+              variants={cardV}
+              {...reveal()}
+              className="relative origin-center"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
               <CodeEditorCard />
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>

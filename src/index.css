@@ -47,6 +47,21 @@
   html {
     scroll-behavior: smooth;
     overflow-x: clip;
+    /* Gentle section settle — proximity won't fight free scrolling */
+    scroll-snap-type: y proximity;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+      scroll-snap-type: none;
+    }
+  }
+
+  /* Major section stops only — not aggressive mandatory snapping */
+  main > section[id] {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
   }
 
   html.has-custom-cursor,

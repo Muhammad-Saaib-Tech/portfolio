@@ -4,28 +4,28 @@ import { GraduationCap } from 'lucide-react'
 import { education } from '../data/content'
 import Heading from './Heading'
 import {
-  educationTiltVariants,
+  clipWipeVariants,
   getRevealProps,
   headerVariants,
   scrollVariants,
   scrollViewport,
+  tourClipWipeVariants,
 } from '../lib/motion'
 
 export default function Education({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const reduceMotion = useReducedMotion()
-  const skipMotion = flowMode
   void condensed
 
-  const headerV = skipMotion
-    ? undefined
-    : scrollVariants(headerVariants, reduceMotion)
-  const cardV = skipMotion
-    ? undefined
-    : scrollVariants(educationTiltVariants, reduceMotion)
+  const headerV = scrollVariants(headerVariants, reduceMotion)
+  const cardV = scrollVariants(
+    presentation ? tourClipWipeVariants : clipWipeVariants,
+    reduceMotion,
+  )
+  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
 
   return (
     <section
@@ -34,15 +34,9 @@ export default function Education({
         presentation ? 'w-full py-8 sm:py-10' : 'scroll-mt-20 py-24 sm:py-28'
       }`}
       aria-labelledby="education-heading"
-      style={{ perspective: skipMotion ? undefined : 1000 }}
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div
-          variants={headerV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="max-w-2xl"
-        >
+        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Education
           </p>
@@ -57,10 +51,8 @@ export default function Education({
 
         <motion.div
           variants={cardV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="mt-6 max-w-3xl origin-top rounded-lg border border-border bg-bg-elevated p-5 sm:mt-8 sm:p-6"
-          style={{ transformStyle: 'preserve-3d' }}
+          {...reveal()}
+          className="mt-6 max-w-3xl rounded-lg border border-border bg-bg-elevated p-5 sm:mt-8 sm:p-6"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent sm:size-12">

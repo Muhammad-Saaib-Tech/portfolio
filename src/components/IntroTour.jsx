@@ -5,6 +5,7 @@ import {
   animate,
   motion,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useTransform,
 } from 'framer-motion'
@@ -55,6 +56,19 @@ export function shouldSkipTourForDeepLink() {
   return TOUR_SLIDES.some((s) => s.id === hash)
 }
 
+/** Fire creative entrances shortly before a slide centers in the tour playhead */
+function useTourSlideActive(progress, index, threshold = 0.55) {
+  const [active, setActive] = useState(index === 0)
+
+  useMotionValueEvent(progress, 'change', (p) => {
+    if (Math.abs(p - index) <= threshold) {
+      setActive(true)
+    }
+  })
+
+  return active
+}
+
 function FlowSection({ index, progress, children }) {
   const opacity = useTransform(progress, (p) => {
     const dist = Math.abs(p - index)
@@ -74,6 +88,27 @@ function FlowSection({ index, progress, children }) {
     >
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">{children}</div>
     </motion.div>
+  )
+}
+
+function TourSlide({ slide, index, progress, viewportH }) {
+  const tourActive = useTourSlideActive(progress, index)
+  const { Component } = slide
+
+  return (
+    <div
+      className="absolute left-0 right-0"
+      style={{ top: index * viewportH, height: viewportH }}
+    >
+      <FlowSection index={index} progress={progress}>
+        <Component
+          presentation
+          condensed={slide.condensed}
+          tourActive={tourActive}
+          introReady={tourActive}
+        />
+      </FlowSection>
+    </div>
   )
 }
 
@@ -223,25 +258,15 @@ export default function IntroTour({ active, onFinish }) {
         className="relative w-full will-change-transform"
         style={{ y: trackY, height: viewportH * slideCount }}
       >
-        {TOUR_SLIDES.map((slide, i) => {
-          const { Component } = slide
-          return (
-            <div
-              key={slide.id}
-              className="absolute left-0 right-0"
-              style={{ top: i * viewportH, height: viewportH }}
-            >
-              <FlowSection index={i} progress={progress}>
-                <Component
-                  presentation
-                  condensed={slide.condensed}
-                  flowMode
-                  introReady
-                />
-              </FlowSection>
-            </div>
-          )
-        })}
+        {TOUR_SLIDES.map((slide, i) => (
+          <TourSlide
+            key={slide.id}
+            slide={slide}
+            index={i}
+            progress={progress}
+            viewportH={viewportH}
+          />
+        ))}
       </motion.div>
 
       <motion.div

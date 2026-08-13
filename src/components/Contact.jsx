@@ -4,11 +4,11 @@ import { Mail, Phone, Download } from 'lucide-react'
 import { profile, languages } from '../data/content'
 import Heading from './Heading'
 import Magnetic from './Magnetic'
+import WordReveal from './WordReveal'
 import {
   contactSpringVariants,
   contactStaggerVariants,
   getRevealProps,
-  headerVariants,
   scrollVariants,
   scrollViewport,
   simpleFadeVariants,
@@ -53,27 +53,16 @@ const contactLinks = [
 export default function Contact({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const year = new Date().getFullYear()
   const reduceMotion = useReducedMotion()
-  const skipMotion = flowMode
   void condensed
 
-  const headerV = skipMotion
-    ? undefined
-    : scrollVariants(headerVariants, reduceMotion)
-  const listV = skipMotion
-    ? undefined
-    : reduceMotion
-      ? simpleFadeVariants
-      : contactStaggerVariants
-  const itemV = skipMotion
-    ? undefined
-    : scrollVariants(contactSpringVariants, reduceMotion)
-  const footerV = skipMotion
-    ? undefined
-    : simpleFadeVariants
+  const listV = reduceMotion ? simpleFadeVariants : contactStaggerVariants
+  const itemV = scrollVariants(contactSpringVariants, reduceMotion)
+  const footerV = simpleFadeVariants
+  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
 
   return (
     <section
@@ -86,12 +75,7 @@ export default function Contact({
       aria-labelledby="contact-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div
-          variants={headerV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="max-w-2xl"
-        >
+        <div className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Contact
           </p>
@@ -100,18 +84,22 @@ export default function Contact({
             id={presentation ? undefined : 'contact-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
           >
-            Let's work together
+            <WordReveal
+              text="Let's work together"
+              presentation={presentation}
+              active={tourActive}
+              mode="chars"
+            />
           </Heading>
           <p className="mt-4 text-base leading-relaxed text-fg-muted sm:text-lg">
             Open to full-stack .NET roles, consulting, and collaboration —
             reach out anytime.
           </p>
-        </motion.div>
+        </div>
 
         <motion.div
           variants={listV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
+          {...reveal()}
           className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
         >
           <ul className="flex min-w-0 flex-col gap-2">

@@ -7,13 +7,11 @@ import Magnetic from './Magnetic'
 import ParallaxLayer from './ParallaxLayer'
 import HeroVisual from './HeroVisual'
 import { ENABLE_HERO_STARFIELD } from '../config/features'
+import TextScramble from './TextScramble'
 import {
   ambientLoop,
-  duration,
   heroContainerVariants,
   heroItemVariants,
-  revealTransition,
-  stagger,
 } from '../lib/motion'
 
 const StarfieldBackground = lazy(() => import('./StarfieldBackground'))
@@ -106,45 +104,11 @@ function useStarfieldEligible() {
   return eligible
 }
 
-export default function Hero({ introReady = true, presentation = false, flowMode = false }) {
+export default function Hero({ introReady = true, presentation = false, tourActive = true }) {
   const sectionRef = useRef(null)
-  const titleWords = profile.title.split(' ')
   const starfieldEligible = useStarfieldEligible()
   const showStarfield = starfieldEligible && !presentation
-
-  if (flowMode) {
-    return (
-      <section className="relative w-full py-4 sm:py-6" aria-label="Introduction">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute inset-0 bg-bg" />
-          <HeroMeshBackground withGlow={false} />
-        </div>
-        <div className="relative z-10 grid w-full items-center gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-12">
-          <div className="min-w-0">
-            <p className="mb-3 flex items-center gap-2 text-sm font-medium text-fg-muted">
-              <MapPin size={15} className="shrink-0 text-accent" strokeWidth={1.75} />
-              {profile.location}
-            </p>
-            <Heading
-              as="h1"
-              className="max-w-[16ch] text-[clamp(1.75rem,1.1rem+4.2vw,2.75rem)] font-extrabold leading-[1.12] tracking-tight wrap-break-word text-fg"
-            >
-              {profile.name}
-            </Heading>
-            <h2 className="mt-2 font-display text-[clamp(1.1rem,0.9rem+1.5vw,1.65rem)] font-semibold tracking-tight text-accent">
-              {profile.title}
-            </h2>
-            <p className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-fg-muted sm:text-base">
-              {profile.tagline}
-            </p>
-          </div>
-          <div className="hidden min-w-0 items-center justify-center lg:flex lg:justify-end">
-            <HeroVisual introReady />
-          </div>
-        </div>
-      </section>
-    )
-  }
+  const ready = Boolean(introReady && tourActive)
 
   return (
     <section
@@ -197,7 +161,7 @@ export default function Hero({ introReady = true, presentation = false, flowMode
         <motion.div
           variants={heroContainerVariants}
           initial="hidden"
-          animate={introReady || presentation ? 'visible' : 'hidden'}
+          animate={ready ? 'visible' : 'hidden'}
           className="relative z-20 min-w-0 w-full"
         >
           <motion.p
@@ -218,36 +182,19 @@ export default function Hero({ introReady = true, presentation = false, flowMode
 
           <motion.h2
             variants={heroItemVariants}
-            className="mt-3 flex flex-wrap gap-x-2 gap-y-1 font-display text-[clamp(1.15rem,0.9rem+1.8vw,1.85rem)] font-semibold tracking-tight text-accent sm:mt-4 sm:gap-x-2.5"
+            className="mt-3 font-display text-[clamp(1.15rem,0.9rem+1.8vw,1.85rem)] font-semibold tracking-tight text-accent sm:mt-4"
             aria-label={profile.title}
           >
-            {titleWords.map((word, i) => (
-              <motion.span
-                key={`${word}-${i}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={
-                  introReady || presentation
-                    ? { opacity: 1, y: 0 }
-                    : { opacity: 0, y: 16 }
-                }
-                transition={{
-                  delay:
-                    introReady || presentation
-                      ? duration.base + i * stagger.items
-                      : 0,
-                  ...revealTransition,
-                }}
-                className="inline-block"
-              >
-                {i === 0 ? (
-                  <Heading as="span" className="font-semibold tracking-tight">
-                    {word}
-                  </Heading>
-                ) : (
-                  word
-                )}
-              </motion.span>
-            ))}
+            {ready ? (
+              <TextScramble
+                text={profile.title}
+                active={ready}
+                durationMs={presentation ? 420 : 560}
+                className="font-display font-semibold tracking-tight"
+              />
+            ) : (
+              <span className="opacity-0">{profile.title}</span>
+            )}
           </motion.h2>
 
           <motion.p
@@ -281,7 +228,7 @@ export default function Hero({ introReady = true, presentation = false, flowMode
         </motion.div>
 
         <div className="relative z-20 flex min-w-0 w-full items-center justify-center lg:justify-end">
-          <HeroVisual introReady={introReady || presentation} />
+          <HeroVisual introReady={ready} />
         </div>
       </div>
     </section>

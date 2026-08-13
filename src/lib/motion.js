@@ -107,10 +107,15 @@ export const simpleFadeVariants = {
   },
 }
 
-/** whileInView vs forced animate for tour / presentation overlays */
-export function getRevealProps(presentation, viewport = scrollViewport) {
+/**
+ * whileInView vs forced animate for tour / presentation overlays.
+ * @param {boolean} presentation
+ * @param {{ once?: boolean, amount?: number }} [viewport]
+ * @param {boolean} [active=true] — tour slides stay hidden until near the playhead
+ */
+export function getRevealProps(presentation, viewport = scrollViewport, active = true) {
   if (presentation) {
-    return { initial: 'hidden', animate: 'visible' }
+    return { initial: 'hidden', animate: active ? 'visible' : 'hidden' }
   }
   return { initial: 'hidden', whileInView: 'visible', viewport }
 }
@@ -325,5 +330,127 @@ export const aboutRightVariants = {
     opacity: 1,
     x: 0,
     transition: { duration: duration.base, ease, delay: 0.12 },
+  },
+}
+
+/** Clip-path wipe (left → right) — About bio, Education */
+export const clipWipeVariants = {
+  hidden: {
+    opacity: 0.35,
+    clipPath: 'inset(0 100% 0 0)',
+  },
+  visible: {
+    opacity: 1,
+    clipPath: 'inset(0 0% 0 0)',
+    transition: { duration: duration.slow, ease },
+  },
+}
+
+export const clipWipeUpVariants = {
+  hidden: {
+    opacity: 0.35,
+    clipPath: 'inset(100% 0 0 0)',
+  },
+  visible: {
+    opacity: 1,
+    clipPath: 'inset(0% 0 0 0)',
+    transition: { duration: duration.base, ease },
+  },
+}
+
+/** Masked window reveal + scale settle — Skills / Projects */
+export const maskScaleVariants = {
+  hidden: {
+    opacity: 0.4,
+    scale: 1.05,
+    clipPath: 'inset(8% 8% 8% 8%)',
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0% 0% 0% 0%)',
+    transition: {
+      duration: duration.base,
+      ease,
+      staggerChildren: stagger.items,
+      delayChildren: 0.08,
+    },
+  },
+}
+
+/** 3D perspective tilt — About IDE / Experience entries */
+export const tiltInRightVariants = {
+  hidden: {
+    opacity: 0,
+    rotateY: 14,
+    rotateX: 4,
+    z: -24,
+  },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    rotateX: 0,
+    z: 0,
+    transition: { duration: duration.slow, ease },
+  },
+}
+
+export const tiltInLeftVariants = {
+  hidden: {
+    opacity: 0,
+    rotateY: -14,
+    rotateX: 4,
+    z: -24,
+  },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    rotateX: 0,
+    z: 0,
+    transition: { duration: duration.slow, ease },
+  },
+}
+
+export const tiltInUpVariants = {
+  hidden: {
+    opacity: 0,
+    rotateX: 12,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    rotateX: 0,
+    y: 0,
+    transition: { duration: duration.base, ease },
+  },
+}
+
+/** Slightly snappier creative reveals for IntroTour overlay */
+export const tourClipWipeVariants = {
+  hidden: { opacity: 0.35, clipPath: 'inset(0 100% 0 0)' },
+  visible: {
+    opacity: 1,
+    clipPath: 'inset(0 0% 0 0)',
+    transition: { duration: 0.45, ease },
+  },
+}
+
+export const tourMaskScaleVariants = {
+  hidden: { opacity: 0.4, scale: 1.05, clipPath: 'inset(8% 8% 8% 8%)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    clipPath: 'inset(0% 0% 0% 0%)',
+    transition: { duration: 0.45, ease, staggerChildren: 0.05, delayChildren: 0.04 },
+  },
+}
+
+export const tourTiltVariants = {
+  hidden: { opacity: 0, rotateY: 12, rotateX: 4 },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    rotateX: 0,
+    transition: { duration: 0.45, ease },
   },
 }

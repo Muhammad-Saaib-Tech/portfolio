@@ -6,12 +6,13 @@ import Heading from './Heading'
 import {
   getRevealProps,
   headerVariants,
-  panelVariants,
+  maskScaleVariants,
   scrollVariants,
   scrollViewport,
   skillChipVariants,
   skillsGridVariants,
   simpleFadeVariants,
+  tourMaskScaleVariants,
 } from '../lib/motion'
 
 const categoryIcons = {
@@ -23,7 +24,10 @@ const categoryIcons = {
 
 const CONDENSED_TAG_LIMIT = 4
 
-function SkillsCondensed() {
+function SkillsCondensed({ reduceMotion, tourActive }) {
+  const panelV = scrollVariants(tourMaskScaleVariants, reduceMotion)
+  const gridV = reduceMotion ? simpleFadeVariants : skillsGridVariants
+
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -36,16 +40,21 @@ function SkillsCondensed() {
         Tools I ship with
       </Heading>
 
-      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <motion.ul
+        className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2"
+        variants={gridV}
+        {...getRevealProps(true, scrollViewport, tourActive)}
+      >
         {skills.map((group) => {
           const Icon = categoryIcons[group.category] ?? Server
           const visible = group.items.slice(0, CONDENSED_TAG_LIMIT)
           const extra = group.items.length - visible.length
 
           return (
-            <li
+            <motion.li
               key={group.category}
-              className="rounded-lg border border-border bg-bg-elevated p-4"
+              variants={panelV}
+              className="origin-center rounded-lg border border-border bg-bg-elevated p-4"
             >
               <div className="mb-2.5 flex items-center gap-2">
                 <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent">
@@ -71,10 +80,10 @@ function SkillsCondensed() {
                   </li>
                 ) : null}
               </ul>
-            </li>
+            </motion.li>
           )
         })}
-      </ul>
+      </motion.ul>
     </>
   )
 }
@@ -82,33 +91,26 @@ function SkillsCondensed() {
 export default function Skills({
   presentation = false,
   condensed = false,
-  flowMode = false,
+  tourActive = true,
 }) {
   const reduceMotion = useReducedMotion()
-  const skipMotion = flowMode
 
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Skills">
-        <SkillsCondensed />
+        <SkillsCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
       </section>
     )
   }
 
-  const headerV = skipMotion
-    ? undefined
-    : scrollVariants(headerVariants, reduceMotion)
-  const gridV = skipMotion
-    ? undefined
-    : reduceMotion
-      ? simpleFadeVariants
-      : skillsGridVariants
-  const panelV = skipMotion
-    ? undefined
-    : scrollVariants(panelVariants, reduceMotion)
-  const chipV = skipMotion
-    ? undefined
-    : scrollVariants(skillChipVariants, reduceMotion)
+  const headerV = scrollVariants(headerVariants, reduceMotion)
+  const gridV = reduceMotion ? simpleFadeVariants : skillsGridVariants
+  const panelV = scrollVariants(
+    presentation ? tourMaskScaleVariants : maskScaleVariants,
+    reduceMotion,
+  )
+  const chipV = scrollVariants(skillChipVariants, reduceMotion)
+  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
 
   return (
     <section
@@ -119,12 +121,7 @@ export default function Skills({
       aria-labelledby="skills-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div
-          variants={headerV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
-          className="max-w-2xl"
-        >
+        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Skills
           </p>
@@ -144,8 +141,7 @@ export default function Skills({
         <motion.ul
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2"
           variants={gridV}
-          initial={skipMotion ? false : 'hidden'}
-          {...(skipMotion ? {} : getRevealProps(presentation, scrollViewport))}
+          {...reveal()}
         >
           {skills.map((group) => {
             const Icon = categoryIcons[group.category] ?? Server
