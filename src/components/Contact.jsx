@@ -1,10 +1,18 @@
 // Contact — footer with email/phone/LinkedIn icon links and CV download CTA.
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Mail, Phone, Download } from 'lucide-react'
 import { profile, languages } from '../data/content'
 import Heading from './Heading'
 import Magnetic from './Magnetic'
-import { headerVariants, revealTransitionSlow, stagger } from '../lib/motion'
+import {
+  getRevealProps,
+  headerVariants,
+  presentSimpleFade,
+  presentSpringItem,
+  presentStaggerFast,
+  revealTransitionSlow,
+  stagger,
+} from '../lib/motion'
 
 function LinkedInIcon({ size = 18, ...props }) {
   return (
@@ -51,21 +59,24 @@ const contactLinks = [
   },
 ]
 
-export default function Contact() {
+export default function Contact({ presentation = false }) {
   const year = new Date().getFullYear()
+  const reduceMotion = useReducedMotion()
 
   return (
     <section
-      id="contact"
-      className="relative scroll-mt-20 border-t border-border pt-24 sm:pt-28"
+      id={presentation ? undefined : 'contact'}
+      className={`relative ${
+        presentation
+          ? 'w-full border-t border-border py-16 sm:py-20'
+          : 'scroll-mt-20 border-t border-border pt-24 sm:pt-28'
+      }`}
       aria-labelledby="contact-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
+          variants={reduceMotion ? presentSimpleFade : headerVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -73,7 +84,7 @@ export default function Contact() {
           </p>
           <Heading
             as="h2"
-            id="contact-heading"
+            id={presentation ? undefined : 'contact-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
           >
             Let's work together
@@ -85,15 +96,24 @@ export default function Contact() {
         </motion.div>
 
         <motion.div
-          variants={blockVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          variants={reduceMotion ? presentSimpleFade : blockVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.3 })}
           className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between sm:gap-10"
         >
-          <ul className="flex min-w-0 flex-col gap-2">
+          <motion.ul
+            className="flex min-w-0 flex-col gap-2"
+            variants={
+              presentation && !reduceMotion ? presentStaggerFast : undefined
+            }
+            {...(presentation ? getRevealProps(true) : {})}
+          >
             {contactLinks.map(({ id, label, href, icon: Icon }) => (
-              <li key={id}>
+              <motion.li
+                key={id}
+                variants={
+                  presentation && !reduceMotion ? presentSpringItem : undefined
+                }
+              >
                 <a
                   href={href}
                   target={id === 'linkedin' ? '_blank' : undefined}
@@ -107,45 +127,54 @@ export default function Contact() {
                     {label}
                   </span>
                 </a>
-              </li>
+              </motion.li>
             ))}
-          </ul>
+          </motion.ul>
 
-          {/* CV served from public/assets/cv.pdf */}
-          <Magnetic className="w-full sm:w-auto">
-            <a
-              href={profile.cvUrl}
-              download
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover sm:w-auto"
-            >
-              <Download size={16} strokeWidth={2} aria-hidden="true" />
-              Download CV
-            </a>
-          </Magnetic>
+          <motion.div
+            variants={
+              presentation && !reduceMotion ? presentSpringItem : undefined
+            }
+            {...(presentation ? getRevealProps(true) : {})}
+            className="w-full sm:w-auto"
+          >
+            <Magnetic className="w-full sm:w-auto">
+              <a
+                href={profile.cvUrl}
+                download
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover sm:w-auto"
+              >
+                <Download size={16} strokeWidth={2} aria-hidden="true" />
+                Download CV
+              </a>
+            </Magnetic>
+          </motion.div>
         </motion.div>
       </div>
 
-      <footer className="mt-16 border-t border-border py-8 sm:mt-20">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-center text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:text-left">
-          <p className="order-1">
-            © {year} {profile.name}
-          </p>
-          <ul
-            className="order-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-fg-muted/80 sm:order-2"
-            aria-label="Languages"
-          >
-            {languages.map((lang, i) => (
-              <li key={lang.name} className="inline-flex items-center gap-x-2">
-                {i > 0 && <span aria-hidden="true">·</span>}
-                <span>
-                  {lang.name} — {lang.level}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="order-2 text-xs sm:order-3">Full-Stack .NET Developer · Islamabad</p>
-        </div>
-      </footer>
+      {!presentation ? (
+        <footer className="mt-16 border-t border-border py-8 sm:mt-20">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-center text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:text-left">
+            <p className="order-1">
+              © {year} {profile.name}
+            </p>
+            <ul
+              className="order-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-fg-muted/80 sm:order-2"
+              aria-label="Languages"
+            >
+              {languages.map((lang, i) => (
+                <li key={lang.name} className="inline-flex items-center gap-x-2">
+                  {i > 0 && <span aria-hidden="true">·</span>}
+                  <span>
+                    {lang.name} — {lang.level}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="order-2 text-xs sm:order-3">Full-Stack .NET Developer · Islamabad</p>
+          </div>
+        </footer>
+      ) : null}
     </section>
   )
 }

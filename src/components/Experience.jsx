@@ -1,12 +1,16 @@
 // Experience — vertical job timeline with collapsible project achievement lists.
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ChevronDown, MapPin } from 'lucide-react'
 import { experience } from '../data/content'
 import Heading from './Heading'
 import {
   fadeLeftVariants,
+  getRevealProps,
   headerVariants,
+  presentSimpleFade,
+  presentStaggerFast,
+  presentTimelineItem,
   revealTransitionFast,
 } from '../lib/motion'
 
@@ -68,19 +72,26 @@ function ProjectBlock({ project, defaultOpen = false }) {
   )
 }
 
-export default function Experience() {
+export default function Experience({ presentation = false }) {
+  const reduceMotion = useReducedMotion()
+  const itemVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentTimelineItem
+      : fadeLeftVariants
+
   return (
     <section
-      id="experience"
-      className="relative scroll-mt-20 py-24 sm:py-28"
+      id={presentation ? undefined : 'experience'}
+      className={`relative ${
+        presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
+      }`}
       aria-labelledby="experience-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
+          variants={reduceMotion ? presentSimpleFade : headerVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -88,7 +99,7 @@ export default function Experience() {
           </p>
           <Heading
             as="h2"
-            id="experience-heading"
+            id={presentation ? undefined : 'experience-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
           >
             Where I've built
@@ -99,17 +110,24 @@ export default function Experience() {
           </p>
         </motion.div>
 
-        <div className="relative mt-12">
+        <motion.div
+          className="relative mt-12"
+          variants={
+            presentation && !reduceMotion ? presentStaggerFast : undefined
+          }
+          {...(presentation
+            ? getRevealProps(true)
+            : {})}
+        >
           {experience.map((job) => (
             <motion.article
               key={job.id}
-              variants={fadeLeftVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
+              variants={itemVariants}
+              {...(presentation
+                ? {}
+                : getRevealProps(false, { once: true, amount: 0.2 }))}
               className="relative min-w-0 pl-7 sm:pl-10"
             >
-              {/* Timeline rail */}
               <div
                 className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
                 aria-hidden="true"
@@ -128,9 +146,7 @@ export default function Experience() {
                   </h3>
                   <span className="text-sm font-medium text-accent">{job.period}</span>
                 </div>
-                <p className="mt-1 text-base text-fg-muted">
-                  {job.company}
-                </p>
+                <p className="mt-1 text-base text-fg-muted">{job.company}</p>
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-fg-muted">
                   <MapPin size={14} className="text-accent" strokeWidth={1.75} />
                   {job.location}
@@ -144,7 +160,7 @@ export default function Experience() {
               </div>
             </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

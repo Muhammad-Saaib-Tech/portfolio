@@ -8,7 +8,11 @@ import {
   duration,
   ease,
   fadeUpVariants,
+  getRevealProps,
   headerVariants,
+  presentPopItem,
+  presentSimpleFade,
+  presentStaggerFast,
   revealTransition,
   revealTransitionFast,
   staggerContainerVariants,
@@ -78,7 +82,10 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
   const highlights = Array.isArray(project.highlights) ? project.highlights : []
 
   return (
-    <div className="fixed inset-0 z-60 flex items-end justify-center p-0 sm:items-center sm:p-8">
+    <div
+      className="fixed inset-0 z-[110] flex items-end justify-center p-0 sm:items-center sm:p-8"
+      data-project-dialog
+    >
       <motion.div
         className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
         initial={{ opacity: 0 }}
@@ -194,13 +201,23 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
   )
 }
 
-export default function Projects() {
+export default function Projects({ presentation = false }) {
   const [selectedId, setSelectedId] = useState(null)
   const [useMorph, setUseMorph] = useState(false)
   const reduceMotion = useReducedMotion()
 
   const selected = projects.find((p) => p.id === selectedId) ?? null
-  const morphEnabled = useMorph && !reduceMotion
+  const morphEnabled = useMorph && !reduceMotion && !presentation
+  const cardVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentPopItem
+      : fadeUpVariants
+  const gridVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentStaggerFast
+      : staggerContainerVariants
 
   const close = useCallback(() => setSelectedId(null), [])
 
@@ -224,30 +241,33 @@ export default function Projects() {
     if (!selected) return undefined
 
     const onKey = (e) => {
-      if (e.key === 'Escape') close()
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        close()
+      }
     }
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    if (!presentation) document.body.style.overflow = 'hidden'
 
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
+      if (!presentation) document.body.style.overflow = prev
     }
-  }, [selected, close])
+  }, [selected, close, presentation])
 
   return (
     <section
-      id="projects"
-      className="relative scroll-mt-20 py-24 sm:py-28"
+      id={presentation ? undefined : 'projects'}
+      className={`relative ${
+        presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
+      }`}
       aria-labelledby="projects-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
+          variants={reduceMotion ? presentSimpleFade : headerVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -255,7 +275,7 @@ export default function Projects() {
           </p>
           <Heading
             as="h2"
-            id="projects-heading"
+            id={presentation ? undefined : 'projects-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
           >
             Selected work
@@ -268,17 +288,15 @@ export default function Projects() {
 
         <motion.ul
           className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-          variants={staggerContainerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
+          variants={gridVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.1 })}
         >
           {projects.map((project) => {
             const isOpen = selectedId === project.id
             const layoutId = `project-card-${project.id}`
 
             return (
-              <motion.li key={project.id} variants={fadeUpVariants} className="min-h-46 min-w-0">
+              <motion.li key={project.id} variants={cardVariants} className="min-h-46 min-w-0">
                 {isOpen ? (
                   <div
                     className="h-full rounded-lg border border-transparent p-5 opacity-0 sm:p-6"

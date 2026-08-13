@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, Moon, Sun, X } from 'lucide-react'
+import { Menu, Moon, MonitorPlay, Sun, X } from 'lucide-react'
 import { navLinks, profile } from '../data/content'
 import { useTheme } from '../context/ThemeContext'
+import { usePresentation } from '../context/PresentationContext'
 import { revealTransitionFast, stagger } from '../lib/motion'
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
+  const { start } = usePresentation()
   const [scrolled, setScrolled] = useState(false)
   const [activeId, setActiveId] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -125,6 +127,23 @@ export default function Navbar() {
         </ul>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={start}
+              aria-label="Presentation Mode"
+              className="peer inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent"
+            >
+              <MonitorPlay size={18} strokeWidth={1.75} />
+            </button>
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute right-0 top-full z-50 mt-2 whitespace-nowrap rounded-md border border-border bg-bg-elevated px-2.5 py-1.5 text-xs font-medium text-fg opacity-0 shadow-sm transition-opacity peer-hover:opacity-100 peer-focus-visible:opacity-100"
+            >
+              Presentation Mode
+            </span>
+          </div>
+
           <button
             type="button"
             onClick={toggleTheme}

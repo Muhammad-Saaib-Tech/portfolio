@@ -1,23 +1,36 @@
 // Education — degree card with institution details and coursework tags.
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { GraduationCap } from 'lucide-react'
 import { education } from '../data/content'
 import Heading from './Heading'
-import { fadeUpVariants, headerVariants } from '../lib/motion'
+import {
+  fadeUpVariants,
+  getRevealProps,
+  headerVariants,
+  presentScaleIn,
+  presentSimpleFade,
+} from '../lib/motion'
 
-export default function Education() {
+export default function Education({ presentation = false }) {
+  const reduceMotion = useReducedMotion()
+  const cardVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentScaleIn
+      : fadeUpVariants
+
   return (
     <section
-      id="education"
-      className="relative scroll-mt-20 py-24 sm:py-28"
+      id={presentation ? undefined : 'education'}
+      className={`relative ${
+        presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
+      }`}
       aria-labelledby="education-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
+          variants={reduceMotion ? presentSimpleFade : headerVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.4 })}
           className="max-w-2xl"
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -25,7 +38,7 @@ export default function Education() {
           </p>
           <Heading
             as="h2"
-            id="education-heading"
+            id={presentation ? undefined : 'education-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
           >
             Academic foundation
@@ -33,10 +46,8 @@ export default function Education() {
         </motion.div>
 
         <motion.div
-          variants={fadeUpVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          variants={cardVariants}
+          {...getRevealProps(presentation, { once: true, amount: 0.3 })}
           className="mt-10 max-w-3xl rounded-lg border border-border bg-bg-elevated p-6 transition duration-300 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-8"
         >
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">

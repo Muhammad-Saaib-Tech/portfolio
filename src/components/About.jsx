@@ -1,11 +1,15 @@
 import { useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { about, profile } from '../data/content'
 import Heading from './Heading'
 import ParallaxLayer from './ParallaxLayer'
 import {
   fadeLeftVariants,
   fadeRightVariants,
+  getRevealProps,
+  presentFadeLeft,
+  presentFadeRight,
+  presentSimpleFade,
   staggerContainerVariants,
   staggerItemVariants,
 } from '../lib/motion'
@@ -111,24 +115,34 @@ function Punct({ children }) {
   return <span className="text-fg-muted">{children}</span>
 }
 
-export default function About() {
+export default function About({ presentation = false }) {
   const sectionRef = useRef(null)
+  const reduceMotion = useReducedMotion()
+  const leftVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentFadeLeft
+      : fadeLeftVariants
+  const rightVariants = reduceMotion
+    ? presentSimpleFade
+    : presentation
+      ? presentFadeRight
+      : fadeRightVariants
 
   return (
     <section
       ref={sectionRef}
-      id="about"
-      className="relative scroll-mt-20 overflow-hidden py-24 sm:py-28"
+      id={presentation ? undefined : 'about'}
+      className={`relative overflow-hidden ${
+        presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
+      }`}
       aria-labelledby="about-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Bio column */}
           <motion.div
-            variants={fadeLeftVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
+            variants={leftVariants}
+            {...getRevealProps(presentation)}
             className="min-w-0"
           >
             <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
@@ -136,7 +150,7 @@ export default function About() {
             </p>
             <Heading
               as="h2"
-              id="about-heading"
+              id={presentation ? undefined : 'about-heading'}
               className="text-[clamp(1.75rem,1.4rem+1.5vw,2.25rem)] font-bold tracking-tight text-fg sm:text-4xl"
             >
               Building systems that last
@@ -148,9 +162,7 @@ export default function About() {
             <motion.ul
               className="mt-8 flex flex-wrap gap-2.5"
               variants={staggerContainerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.4 }}
+              {...getRevealProps(presentation, { once: true, amount: 0.4 })}
               aria-label="Core technologies"
             >
               {about.techBadges.map((badge) => (
@@ -163,22 +175,26 @@ export default function About() {
             </motion.ul>
           </motion.div>
 
-          {/* Editor visual */}
           <motion.div
-            variants={fadeRightVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
+            variants={rightVariants}
+            {...getRevealProps(presentation)}
             className="relative min-w-0"
           >
-            <ParallaxLayer
-              scrollRef={sectionRef}
-              distance={36}
-              offset={['start end', 'end start']}
-              className="pointer-events-none absolute -inset-8"
-            >
-              <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-fg-muted)_12%,transparent),transparent_70%)] blur-2xl" />
-            </ParallaxLayer>
+            {!presentation ? (
+              <ParallaxLayer
+                scrollRef={sectionRef}
+                distance={36}
+                offset={['start end', 'end start']}
+                className="pointer-events-none absolute -inset-8"
+              >
+                <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-fg-muted)_12%,transparent),transparent_70%)] blur-2xl" />
+              </ParallaxLayer>
+            ) : (
+              <div
+                className="pointer-events-none absolute -inset-8 rounded-2xl bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-fg-muted)_12%,transparent),transparent_70%)] blur-2xl"
+                aria-hidden="true"
+              />
+            )}
             <div className="relative">
               <CodeEditorCard />
             </div>

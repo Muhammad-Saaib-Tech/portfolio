@@ -12,19 +12,20 @@ import {
   heroContainerVariants,
   heroItemVariants,
   revealTransition,
-  scrollCueLoop,
   stagger,
 } from '../lib/motion'
 
-export default function Hero({ introReady = true }) {
+export default function Hero({ introReady = true, presentation = false }) {
   const sectionRef = useRef(null)
   const titleWords = profile.title.split(' ')
 
   return (
     <section
       ref={sectionRef}
-      id="home"
-      className="relative flex min-h-dvh items-center overflow-hidden"
+      id={presentation ? undefined : 'home'}
+      className={`relative flex items-center overflow-hidden ${
+        presentation ? 'min-h-full py-10' : 'min-h-dvh'
+      }`}
       aria-label="Introduction"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -49,11 +50,17 @@ export default function Hero({ introReady = true }) {
         </ParallaxLayer>
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-5 pb-16 pt-24 sm:gap-10 sm:px-8 sm:pb-20 sm:pt-28 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-20 lg:pb-24 lg:pt-32 xl:gap-x-24">
+      <div
+        className={`relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-5 sm:gap-10 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-20 xl:gap-x-24 ${
+          presentation
+            ? 'pb-10 pt-6 sm:pb-12 sm:pt-8 lg:pb-14 lg:pt-10'
+            : 'pb-16 pt-24 sm:pb-20 sm:pt-28 lg:pb-24 lg:pt-32'
+        }`}
+      >
         <motion.div
           variants={heroContainerVariants}
           initial="hidden"
-          animate={introReady ? 'visible' : 'hidden'}
+          animate={introReady || presentation ? 'visible' : 'hidden'}
           className="relative z-20 min-w-0 w-full"
         >
           <motion.p
@@ -81,9 +88,16 @@ export default function Hero({ introReady = true }) {
               <motion.span
                 key={`${word}-${i}`}
                 initial={{ opacity: 0, y: 16 }}
-                animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+                animate={
+                  introReady || presentation
+                    ? { opacity: 1, y: 0 }
+                    : { opacity: 0, y: 16 }
+                }
                 transition={{
-                  delay: introReady ? duration.base + i * stagger.items : 0,
+                  delay:
+                    introReady || presentation
+                      ? duration.base + i * stagger.items
+                      : 0,
                   ...revealTransition,
                 }}
                 className="inline-block"
@@ -130,30 +144,9 @@ export default function Hero({ introReady = true }) {
         </motion.div>
 
         <div className="flex min-w-0 w-full items-center justify-center lg:justify-end">
-          <HeroVisual introReady={introReady} />
+          <HeroVisual introReady={introReady || presentation} />
         </div>
       </div>
-
-      {/* Desktop / tall layouts only — avoids overlapping CTAs on short stacked viewports */}
-      <motion.a
-        href="#about"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: introReady ? 1 : 0 }}
-        transition={{
-          delay: introReady ? 1.2 : 0,
-          ...revealTransition,
-          duration: duration.slow,
-        }}
-        className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-fg-muted transition-colors hover:text-accent lg:flex"
-        aria-label="Scroll to about section"
-      >
-        <span className="text-[11px] font-medium uppercase tracking-[0.2em]">Scroll</span>
-        <motion.span
-          className="block h-8 w-px origin-top bg-accent"
-          animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.4, 1, 0.4] }}
-          transition={scrollCueLoop}
-        />
-      </motion.a>
     </section>
   )
 }
