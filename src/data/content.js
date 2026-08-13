@@ -98,15 +98,14 @@ export const projects = [
     name: 'Clippable',
     stack: '.NET Core',
     year: '2025',
-    // TODO: Confirm context — inferred as Personal Project (library/product-style build)
-    context: 'Personal Project',
+    // TODO: Confirm type if needed
+    type: 'Personal Project',
     // TODO: Replace with a more accurate project description
     description: 'Full-stack application built with .NET Core.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: Key architecture or domain challenge for Clippable',
-      'TODO: Notable .NET Core implementation detail',
-      'TODO: Outcome or constraint that shaped the solution',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
   {
@@ -114,15 +113,14 @@ export const projects = [
     name: 'Radzen Grid Pagination Library',
     stack: 'Blazor',
     year: '2025',
-    // TODO: Confirm context — inferred as Personal Project (reusable library)
-    context: 'Personal Project',
+    // TODO: Confirm type if needed
+    type: 'Personal Project',
     // TODO: Replace with a more accurate project description
     description: 'Reusable Blazor pagination library for Radzen grids.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: How pagination state is managed across Radzen grids',
-      'TODO: Reuse/API surface that made the library drop-in',
-      'TODO: Edge case (large datasets, SSR, etc.) that was hard to get right',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
   {
@@ -130,15 +128,14 @@ export const projects = [
     name: 'A.M. Best',
     stack: 'Blazor Frontend',
     year: '2024',
-    // TODO: Confirm context — inferred as Client Project (work delivery)
-    context: 'Client Project',
+    // TODO: Confirm type if needed
+    type: 'Client Project',
     // TODO: Replace with a more accurate project description
     description: 'Blazor frontend for insurance rating workflows.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: Rating workflow UX or state-management challenge',
-      'TODO: Integration point with backend/rating services',
-      'TODO: Performance or accessibility constraint in the Blazor UI',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
   {
@@ -146,15 +143,14 @@ export const projects = [
     name: 'E2 Value',
     stack: '.NET WebForms',
     year: '2024',
-    // TODO: Confirm context — inferred as Client Project (legacy work delivery)
-    context: 'Client Project',
+    // TODO: Confirm type if needed
+    type: 'Client Project',
     // TODO: Replace with a more accurate project description
     description: 'Legacy .NET WebForms application enhancements.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: Legacy WebForms constraint that shaped the approach',
-      'TODO: Enhancement delivered without a full rewrite',
-      'TODO: Reliability or maintainability improvement made',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
   {
@@ -162,15 +158,14 @@ export const projects = [
     name: 'Inspect Connect',
     stack: '.NET Core + Angular',
     year: '2024',
-    // TODO: Confirm context — inferred as Client Project (platform delivery)
-    context: 'Client Project',
+    // TODO: Confirm type if needed
+    type: 'Client Project',
     // TODO: Replace with a more accurate project description
     description: 'Inspection platform with .NET Core APIs and Angular UI.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: API/.NET Core design decision for inspection flows',
-      'TODO: Angular UI challenge (forms, offline, real-time, etc.)',
-      'TODO: Cross-cutting concern (auth, sync, reporting) that mattered most',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
   {
@@ -178,15 +173,14 @@ export const projects = [
     name: 'Medicine Authenticator',
     stack: 'Flutter',
     year: '2021',
-    // TODO: Confirm context — inferred as Personal Project (mobile build; could be academic)
-    context: 'Personal Project',
+    // TODO: Confirm type if needed (could be academic)
+    type: 'Personal Project',
     // TODO: Replace with a more accurate project description
     description: 'Mobile app for medicine authenticity verification.',
-    // TODO: Replace highlights with real technical specifics
     highlights: [
-      'TODO: Verification flow (QR/scan/API) and how it works',
-      'TODO: Flutter packaging or device capability that was tricky',
-      'TODO: Trust/security consideration for authenticity checks',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
+      'TODO: add specific technical highlight',
     ],
   },
 ]
