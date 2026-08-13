@@ -1,5 +1,5 @@
-import { useRef, lazy, Suspense } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin } from 'lucide-react'
 import { profile } from '../data/content'
 import Heading from './Heading'
@@ -18,17 +18,106 @@ import {
 
 const StarfieldBackground = lazy(() => import('./StarfieldBackground'))
 
+const MOBILE_MAX_WIDTH = 768
+const MIN_CPU_CORES = 4
+
+/**
+ * Always-on CSS mesh — the background when starfield is skipped (mobile / reduced-motion / low-end).
+ * Also sits under the starfield on desktop so there is never an empty Hero.
+ */
+function HeroMeshBackground({ withGlow = true }) {
+  return (
+    <>
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_srgb,var(--color-fg)_7%,transparent),transparent_55%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_85%_70%,color-mix(in_srgb,var(--color-fg-muted)_8%,transparent),transparent_50%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_40%_35%_at_10%_80%,color-mix(in_srgb,var(--color-fg)_5%,transparent),transparent_45%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="hero-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.22]"
+        aria-hidden="true"
+      />
+      {withGlow ? (
+        <div
+          className="absolute left-1/2 top-[28%] h-105 w-105 -translate-x-1/2 rounded-full bg-fg/5 blur-[100px]"
+          aria-hidden="true"
+        />
+      ) : null}
+    </>
+  )
+}
+
+function useStarfieldEligible() {
+  const reduceMotion = useReducedMotion()
+  const [eligible, setEligible] = useState(false)
+
+  useEffect(() => {
+    let timeoutId = 0
+
+    const evaluate = () => {
+      if (!ENABLE_HERO_STARFIELD) {
+        setEligible(false)
+        return
+      }
+      if (reduceMotion) {
+        setEligible(false)
+        return
+      }
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setEligible(false)
+        return
+      }
+      if (window.innerWidth < MOBILE_MAX_WIDTH) {
+        setEligible(false)
+        return
+      }
+      const cores = navigator.hardwareConcurrency
+      if (typeof cores === 'number' && cores > 0 && cores < MIN_CPU_CORES) {
+        setEligible(false)
+        return
+      }
+      setEligible(true)
+    }
+
+    const onResize = () => {
+      window.clearTimeout(timeoutId)
+      timeoutId = window.setTimeout(evaluate, 150)
+    }
+
+    evaluate()
+    window.addEventListener('resize', onResize)
+    const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    motionMq.addEventListener('change', evaluate)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      window.removeEventListener('resize', onResize)
+      motionMq.removeEventListener('change', evaluate)
+    }
+  }, [reduceMotion])
+
+  return eligible
+}
+
 export default function Hero({ introReady = true, presentation = false, flowMode = false }) {
   const sectionRef = useRef(null)
   const titleWords = profile.title.split(' ')
+  const starfieldEligible = useStarfieldEligible()
+  const showStarfield = starfieldEligible && !presentation
 
   if (flowMode) {
     return (
       <section className="relative w-full py-4 sm:py-6" aria-label="Introduction">
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute inset-0 bg-bg" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_srgb,var(--color-fg)_7%,transparent),transparent_55%)]" />
-          <div className="hero-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.22]" />
+          <HeroMeshBackground withGlow={false} />
         </div>
         <div className="relative z-10 grid w-full items-center gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-x-12">
           <div className="min-w-0">
@@ -61,7 +150,7 @@ export default function Hero({ introReady = true, presentation = false, flowMode
     <section
       ref={sectionRef}
       id={presentation ? undefined : 'home'}
-      data-starfield={ENABLE_HERO_STARFIELD && !presentation ? 'enabled' : 'off'}
+      data-starfield={showStarfield ? 'active' : 'fallback'}
       className={`relative flex items-center overflow-hidden ${
         presentation ? 'min-h-full py-10' : 'min-h-dvh'
       }`}
@@ -70,37 +159,32 @@ export default function Hero({ introReady = true, presentation = false, flowMode
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0 z-0 bg-bg" />
 
-        {ENABLE_HERO_STARFIELD && !presentation ? (
+        {/* Always render CSS mesh — never leave Hero without a background */}
+        <div className="absolute inset-0 z-0">
+          <HeroMeshBackground withGlow={!showStarfield} />
+        </div>
+
+        {/* Desktop-only decorative parallax glow (extra depth; mesh already present) */}
+        {showStarfield ? (
+          <ParallaxLayer
+            scrollRef={sectionRef}
+            distance={72}
+            className="absolute inset-0 z-1"
+          >
+            <motion.div
+              className="absolute left-1/2 top-[28%] h-105 w-105 -translate-x-1/2 rounded-full bg-fg/5 blur-[100px]"
+              animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.08, 1] }}
+              transition={ambientLoop}
+            />
+          </ParallaxLayer>
+        ) : null}
+
+        {/* Three.js starfield only when eligible — sits above mesh, below content */}
+        {showStarfield ? (
           <Suspense fallback={null}>
             <StarfieldBackground />
           </Suspense>
         ) : null}
-
-        <ParallaxLayer
-          scrollRef={sectionRef}
-          distance={56}
-          className="absolute inset-x-0 -top-16 -bottom-16 z-[1]"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_srgb,var(--color-fg)_7%,transparent),transparent_55%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_85%_70%,color-mix(in_srgb,var(--color-fg-muted)_8%,transparent),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_35%_at_10%_80%,color-mix(in_srgb,var(--color-fg)_5%,transparent),transparent_45%)]" />
-        </ParallaxLayer>
-
-        <ParallaxLayer
-          scrollRef={sectionRef}
-          distance={32}
-          className="absolute inset-x-0 -top-12 -bottom-12 z-[1]"
-        >
-          <div className="hero-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.22]" />
-        </ParallaxLayer>
-
-        <ParallaxLayer scrollRef={sectionRef} distance={72} className="absolute inset-0 z-[1]">
-          <motion.div
-            className="absolute left-1/2 top-[28%] h-105 w-105 -translate-x-1/2 rounded-full bg-fg/5 blur-[100px]"
-            animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.08, 1] }}
-            transition={ambientLoop}
-          />
-        </ParallaxLayer>
       </div>
 
       <div
