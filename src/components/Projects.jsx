@@ -23,13 +23,32 @@ function canUseLayoutMorph() {
   )
 }
 
+function stackBadges(stack) {
+  return String(stack)
+    .split(/\s*\+\s*/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+function hasLiveUrl(url) {
+  return Boolean(url) && url !== '#'
+}
+
+function ContextTag({ context, className = '' }) {
+  return (
+    <span
+      className={`inline-flex rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium text-fg-muted ${className}`}
+    >
+      {context}
+    </span>
+  )
+}
+
 function ProjectCardFace({ project, compact = false }) {
   return (
     <>
       <div className="mb-4 flex items-start justify-between gap-3">
-        <span className="inline-flex max-w-[70%] rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium wrap-break-word text-accent">
-          {project.stack}
-        </span>
+        <ContextTag context={project.context} className="max-w-[70%] wrap-break-word" />
         <span className="shrink-0 font-mono text-xs text-fg-muted">{project.year}</span>
       </div>
 
@@ -47,11 +66,20 @@ function ProjectCardFace({ project, compact = false }) {
       >
         {project.description}
       </p>
+
+      {compact ? (
+        <span className="mt-4 inline-flex max-w-full rounded-full border border-border bg-bg px-2.5 py-1 text-xs font-medium wrap-break-word text-accent">
+          {project.stack}
+        </span>
+      ) : null}
     </>
   )
 }
 
 function ProjectDetail({ project, onClose, layoutId, useMorph }) {
+  const tech = stackBadges(project.stack)
+  const liveUrl = hasLiveUrl(project.url)
+
   return (
     <div className="fixed inset-0 z-60 flex items-end justify-center p-0 sm:items-center sm:p-8">
       <motion.div
@@ -77,59 +105,99 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
         initial={useMorph ? false : { opacity: 0, y: 24 }}
         animate={useMorph ? undefined : { opacity: 1, y: 0 }}
         exit={useMorph ? undefined : { opacity: 0, y: 16 }}
-        className="relative z-10 flex max-h-[min(92dvh,640px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-elevated p-6 shadow-[0_24px_80px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:rounded-lg sm:p-8"
+        className="relative z-10 flex max-h-[min(92dvh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-elevated shadow-[0_24px_80px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close project details"
-          className="absolute right-3 top-3 inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent sm:right-4 sm:top-4"
+          className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-accent-muted hover:text-accent sm:right-4 sm:top-4"
         >
           <X size={18} strokeWidth={1.75} />
         </button>
 
-        <div id={`project-dialog-${project.id}`} className="pr-10">
-          <ProjectCardFace project={project} />
-        </div>
+        <div className="overflow-y-auto overscroll-contain p-6 sm:p-8">
+          <div className="pr-10">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <ContextTag context={project.context} />
+              <span className="font-mono text-xs text-fg-muted">{project.year}</span>
+            </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...revealTransition, delay: useMorph ? 0.15 : 0 }}
-          className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6"
-        >
-          <span className="text-xs font-medium uppercase tracking-[0.16em] text-fg-muted">
-            Tech stack
-          </span>
-          <span className="inline-flex rounded-full border border-accent/40 bg-accent-muted px-3 py-1 text-sm font-medium text-accent">
-            {project.stack}
-          </span>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...revealTransition, delay: useMorph ? 0.22 : 0.05 }}
-          className="mt-6"
-        >
-          {project.url && project.url !== '#' ? (
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+            <h3
+              id={`project-dialog-${project.id}`}
+              className="font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl"
             >
-              Open project
-              <ArrowUpRight size={15} strokeWidth={2} />
-            </a>
-          ) : (
-            <span className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-5 py-2.5 text-sm font-medium text-fg-muted">
-              Link coming soon
-              <ArrowUpRight size={15} strokeWidth={1.75} />
-            </span>
-          )}
-        </motion.div>
+              {project.name}
+            </h3>
+
+            <p className="mt-4 text-pretty text-base leading-relaxed text-fg-muted sm:text-lg">
+              {project.description}
+            </p>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...revealTransition, delay: useMorph ? 0.12 : 0 }}
+            className="mt-8 border-t border-border pt-6"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-fg-muted">
+              Tech stack
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-2" aria-label="Tech stack">
+              {tech.map((item) => (
+                <li key={item}>
+                  <span className="inline-flex rounded-full border border-accent/40 bg-accent-muted px-3 py-1 text-sm font-medium text-accent">
+                    {item}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {project.highlights?.length ? (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...revealTransition, delay: useMorph ? 0.18 : 0.04 }}
+              className="mt-8 border-t border-border pt-6"
+            >
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-fg-muted">
+                Highlights
+              </p>
+              <ul className="mt-4 space-y-3">
+                {project.highlights.map((item) => (
+                  <li
+                    key={item}
+                    className="relative pl-4 text-pretty text-sm leading-relaxed text-fg-muted before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-accent"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ) : null}
+
+          {liveUrl ? (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...revealTransition, delay: useMorph ? 0.24 : 0.08 }}
+              className="mt-8 border-t border-border pt-6"
+            >
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+              >
+                Open project
+                <ArrowUpRight size={15} strokeWidth={2} />
+              </a>
+            </motion.div>
+          ) : null}
+        </div>
       </motion.div>
     </div>
   )
