@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin } from 'lucide-react'
 import { profile } from '../data/content'
@@ -6,6 +6,7 @@ import Heading from './Heading'
 import Magnetic from './Magnetic'
 import ParallaxLayer from './ParallaxLayer'
 import HeroVisual from './HeroVisual'
+import { ENABLE_HERO_STARFIELD } from '../config/features'
 import {
   ambientLoop,
   duration,
@@ -14,6 +15,8 @@ import {
   revealTransition,
   stagger,
 } from '../lib/motion'
+
+const StarfieldBackground = lazy(() => import('./StarfieldBackground'))
 
 export default function Hero({ introReady = true, presentation = false, flowMode = false }) {
   const sectionRef = useRef(null)
@@ -64,19 +67,33 @@ export default function Hero({ introReady = true, presentation = false, flowMode
       aria-label="Introduction"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute inset-0 bg-bg" />
+        <div className="absolute inset-0 z-0 bg-bg" />
 
-        <ParallaxLayer scrollRef={sectionRef} distance={56} className="absolute inset-x-0 -top-16 -bottom-16">
+        {ENABLE_HERO_STARFIELD && !presentation ? (
+          <Suspense fallback={null}>
+            <StarfieldBackground />
+          </Suspense>
+        ) : null}
+
+        <ParallaxLayer
+          scrollRef={sectionRef}
+          distance={56}
+          className="absolute inset-x-0 -top-16 -bottom-16 z-[1]"
+        >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_srgb,var(--color-fg)_7%,transparent),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_85%_70%,color-mix(in_srgb,var(--color-fg-muted)_8%,transparent),transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_35%_at_10%_80%,color-mix(in_srgb,var(--color-fg)_5%,transparent),transparent_45%)]" />
         </ParallaxLayer>
 
-        <ParallaxLayer scrollRef={sectionRef} distance={32} className="absolute inset-x-0 -top-12 -bottom-12">
+        <ParallaxLayer
+          scrollRef={sectionRef}
+          distance={32}
+          className="absolute inset-x-0 -top-12 -bottom-12 z-[1]"
+        >
           <div className="hero-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.22]" />
         </ParallaxLayer>
 
-        <ParallaxLayer scrollRef={sectionRef} distance={72} className="absolute inset-0">
+        <ParallaxLayer scrollRef={sectionRef} distance={72} className="absolute inset-0 z-[1]">
           <motion.div
             className="absolute left-1/2 top-[28%] h-105 w-105 -translate-x-1/2 rounded-full bg-fg/5 blur-[100px]"
             animate={{ opacity: [0.35, 0.55, 0.35], scale: [1, 1.08, 1] }}
@@ -178,7 +195,7 @@ export default function Hero({ introReady = true, presentation = false, flowMode
           </motion.div>
         </motion.div>
 
-        <div className="flex min-w-0 w-full items-center justify-center lg:justify-end">
+        <div className="relative z-20 flex min-w-0 w-full items-center justify-center lg:justify-end">
           <HeroVisual introReady={introReady || presentation} />
         </div>
       </div>
