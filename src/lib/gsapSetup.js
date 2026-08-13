@@ -1,0 +1,13 @@
+// Register GSAP plugins once for the app. Import this from App (or any entry) early.
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+let registered = false
+
+export function registerGsap() {
+  if (registered) return
+  gsap.registerPlugin(ScrollTrigger)
+  registered = true
+}
+
+export { gsap, ScrollTrigger }

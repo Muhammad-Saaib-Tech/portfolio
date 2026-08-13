@@ -1,21 +1,8 @@
 import { useRef } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
 import { about, profile } from '../data/content'
-import Heading from './Heading'
+import ScrollHeading from './ScrollHeading'
 import ParallaxLayer from './ParallaxLayer'
-import {
-  clipWipeVariants,
-  getRevealProps,
-  headerVariants,
-  scrollVariants,
-  scrollViewport,
-  simpleFadeVariants,
-  staggerContainerVariants,
-  staggerItemVariants,
-  tiltInRightVariants,
-  tourClipWipeVariants,
-  tourTiltVariants,
-} from '../lib/motion'
+import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const stackPreview = ['.NET Core', 'Angular', 'Blazor', 'PostgreSQL', 'RabbitMQ']
 
@@ -118,24 +105,94 @@ function Punct({ children }) {
 export default function About({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
   const sectionRef = useRef(null)
-  const reduceMotion = useReducedMotion()
   void condensed
+  const gsapEnabled = !presentation
 
-  const headerV = scrollVariants(headerVariants, reduceMotion)
-  const bioV = scrollVariants(
-    presentation ? tourClipWipeVariants : clipWipeVariants,
-    reduceMotion,
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, root }) => {
+      const header = root.querySelector('[data-about-header]')
+      const bio = root.querySelector('[data-about-bio]')
+      const chips = root.querySelectorAll('[data-about-chip]')
+      const card = root.querySelector('[data-about-card]')
+
+      const targets = [header, bio, card, ...chips].filter(Boolean)
+
+      if (reduced) {
+        gsap.from(targets, {
+          opacity: 0,
+          y: 16,
+          duration: 0.4,
+          stagger: 0.06,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        })
+        return
+      }
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: SECTION_START,
+            end: SECTION_END,
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (bio) {
+        gsap.from(bio, {
+          opacity: 0,
+          y: 36,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 75%',
+            end: 'top 40%',
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (chips.length) {
+        gsap.from(chips, {
+          opacity: 0,
+          y: 14,
+          ease: 'none',
+          stagger: 0.05,
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 70%',
+            end: 'top 40%',
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (card) {
+        gsap.from(card, {
+          opacity: 0,
+          y: 40,
+          x: 24,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 70%',
+            end: 'top 35%',
+            scrub: SCRUB,
+          },
+        })
+      }
+    },
+    [],
+    { enabled: gsapEnabled },
   )
-  const cardV = scrollVariants(
-    presentation ? tourTiltVariants : tiltInRightVariants,
-    reduceMotion,
-  )
-  const chipVariants = scrollVariants(staggerItemVariants, reduceMotion)
-  const reveal = (vp = scrollViewport) =>
-    getRevealProps(presentation, vp, tourActive)
 
   return (
     <section
@@ -149,49 +206,41 @@ export default function About({
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="min-w-0">
-            <motion.div variants={headerV} {...reveal()}>
+            <div data-about-header data-gsap-reveal>
               <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
                 About
               </p>
-              <Heading
-                as="h2"
+              <ScrollHeading
+                text="Building systems that last"
                 id={presentation ? undefined : 'about-heading'}
                 className="text-[clamp(1.75rem,1.4rem+1.5vw,2.25rem)] font-bold tracking-tight text-fg sm:text-4xl"
-              >
-                Building systems that last
-              </Heading>
-            </motion.div>
+                enabled={gsapEnabled}
+              />
+            </div>
 
-            <motion.p
-              variants={bioV}
-              {...reveal()}
+            <p
+              data-about-bio
+              data-gsap-reveal
               className="mt-6 text-pretty text-base leading-relaxed text-fg-muted sm:text-lg"
             >
               {about.bio}
-            </motion.p>
+            </p>
 
-            <motion.ul
+            <ul
               className="mt-8 flex flex-wrap gap-2.5"
-              variants={
-                reduceMotion ? simpleFadeVariants : staggerContainerVariants
-              }
-              {...reveal()}
               aria-label="Core technologies"
             >
               {about.techBadges.map((badge) => (
-                <motion.li key={badge.name} variants={chipVariants}>
+                <li key={badge.name} data-about-chip data-gsap-reveal>
                   <span className="inline-flex min-h-9 items-center rounded-full border border-border bg-bg-elevated px-3.5 py-1.5 text-sm font-medium text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                     {badge.label}
                   </span>
-                </motion.li>
+                </li>
               ))}
-            </motion.ul>
+            </ul>
           </div>
 
-          <div
-            className="relative min-w-0"
-            style={{ perspective: reduceMotion ? undefined : 1000 }}
-          >
+          <div className="relative min-w-0">
             {!presentation ? (
               <ParallaxLayer
                 scrollRef={sectionRef}
@@ -207,14 +256,9 @@ export default function About({
                 aria-hidden="true"
               />
             )}
-            <motion.div
-              variants={cardV}
-              {...reveal()}
-              className="relative origin-center"
-              style={{ transformStyle: 'preserve-3d' }}
-            >
+            <div data-about-card data-gsap-reveal className="relative">
               <CodeEditorCard />
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

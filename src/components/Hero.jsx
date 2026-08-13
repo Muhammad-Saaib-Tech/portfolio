@@ -7,7 +7,6 @@ import Magnetic from './Magnetic'
 import ParallaxLayer from './ParallaxLayer'
 import HeroVisual from './HeroVisual'
 import { ENABLE_HERO_STARFIELD } from '../config/features'
-import TextScramble from './TextScramble'
 import {
   ambientLoop,
   heroContainerVariants,
@@ -183,18 +182,8 @@ export default function Hero({ introReady = true, presentation = false, tourActi
           <motion.h2
             variants={heroItemVariants}
             className="mt-3 font-display text-[clamp(1.15rem,0.9rem+1.8vw,1.85rem)] font-semibold tracking-tight text-accent sm:mt-4"
-            aria-label={profile.title}
           >
-            {ready ? (
-              <TextScramble
-                text={profile.title}
-                active={ready}
-                durationMs={presentation ? 420 : 560}
-                className="font-display font-semibold tracking-tight"
-              />
-            ) : (
-              <span className="opacity-0">{profile.title}</span>
-            )}
+            {profile.title}
           </motion.h2>
 
           <motion.p

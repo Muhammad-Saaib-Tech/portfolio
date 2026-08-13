@@ -1,19 +1,9 @@
-// Skills — category panels with icon headers and staggered skill chip tags.
-import { motion, useReducedMotion } from 'framer-motion'
+// Skills — category panels; scrubbed stagger via GSAP ScrollTrigger.
+import { useRef } from 'react'
 import { Server, Layout, Database, Container } from 'lucide-react'
 import { skills } from '../data/content'
-import Heading from './Heading'
-import {
-  getRevealProps,
-  headerVariants,
-  maskScaleVariants,
-  scrollVariants,
-  scrollViewport,
-  skillChipVariants,
-  skillsGridVariants,
-  simpleFadeVariants,
-  tourMaskScaleVariants,
-} from '../lib/motion'
+import ScrollHeading from './ScrollHeading'
+import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const categoryIcons = {
   Backend: Server,
@@ -24,37 +14,29 @@ const categoryIcons = {
 
 const CONDENSED_TAG_LIMIT = 4
 
-function SkillsCondensed({ reduceMotion, tourActive }) {
-  const panelV = scrollVariants(tourMaskScaleVariants, reduceMotion)
-  const gridV = reduceMotion ? simpleFadeVariants : skillsGridVariants
-
+function SkillsCondensed() {
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
         Skills
       </p>
-      <Heading
-        as="h2"
+      <ScrollHeading
+        text="Tools I ship with"
         className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
-      >
-        Tools I ship with
-      </Heading>
+        animateWords={false}
+        enabled={false}
+      />
 
-      <motion.ul
-        className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2"
-        variants={gridV}
-        {...getRevealProps(true, scrollViewport, tourActive)}
-      >
+      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {skills.map((group) => {
           const Icon = categoryIcons[group.category] ?? Server
           const visible = group.items.slice(0, CONDENSED_TAG_LIMIT)
           const extra = group.items.length - visible.length
 
           return (
-            <motion.li
+            <li
               key={group.category}
-              variants={panelV}
-              className="origin-center rounded-lg border border-border bg-bg-elevated p-4"
+              className="rounded-lg border border-border bg-bg-elevated p-4"
             >
               <div className="mb-2.5 flex items-center gap-2">
                 <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-bg text-accent">
@@ -80,10 +62,10 @@ function SkillsCondensed({ reduceMotion, tourActive }) {
                   </li>
                 ) : null}
               </ul>
-            </motion.li>
+            </li>
           )
         })}
-      </motion.ul>
+      </ul>
     </>
   )
 }
@@ -91,29 +73,73 @@ function SkillsCondensed({ reduceMotion, tourActive }) {
 export default function Skills({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
-  const reduceMotion = useReducedMotion()
+  const sectionRef = useRef(null)
+  const gsapEnabled = !presentation
+
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, root }) => {
+      const header = root.querySelector('[data-skills-header]')
+      const panels = root.querySelectorAll('[data-skills-panel]')
+
+      if (reduced) {
+        gsap.from([header, ...panels].filter(Boolean), {
+          opacity: 0,
+          y: 16,
+          duration: 0.4,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        })
+        return
+      }
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: SECTION_START,
+            end: SECTION_END,
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (panels.length) {
+        gsap.from(panels, {
+          opacity: 0,
+          y: 32,
+          scale: 0.97,
+          ease: 'none',
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 72%',
+            end: 'top 28%',
+            scrub: SCRUB,
+          },
+        })
+      }
+    },
+    [],
+    { enabled: gsapEnabled },
+  )
 
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Skills">
-        <SkillsCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
+        <SkillsCondensed />
       </section>
     )
   }
 
-  const headerV = scrollVariants(headerVariants, reduceMotion)
-  const gridV = reduceMotion ? simpleFadeVariants : skillsGridVariants
-  const panelV = scrollVariants(
-    presentation ? tourMaskScaleVariants : maskScaleVariants,
-    reduceMotion,
-  )
-  const chipV = scrollVariants(skillChipVariants, reduceMotion)
-  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
-
   return (
     <section
+      ref={sectionRef}
       id={presentation ? undefined : 'skills'}
       className={`relative ${
         presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
@@ -121,35 +147,31 @@ export default function Skills({
       aria-labelledby="skills-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
+        <div data-skills-header data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Skills
           </p>
-          <Heading
-            as="h2"
+          <ScrollHeading
+            text="Tools I ship with"
             id={presentation ? undefined : 'skills-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
-          >
-            Tools I ship with
-          </Heading>
+            enabled={gsapEnabled}
+          />
           <p className="mt-4 text-base leading-relaxed text-fg-muted sm:text-lg">
             A focused stack for building secure APIs, rich front-ends, and
             reliable data platforms — end to end.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.ul
-          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2"
-          variants={gridV}
-          {...reveal()}
-        >
+        <ul className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
           {skills.map((group) => {
             const Icon = categoryIcons[group.category] ?? Server
 
             return (
-              <motion.li
+              <li
                 key={group.category}
-                variants={panelV}
+                data-skills-panel
+                data-gsap-reveal
                 className="group origin-center rounded-lg border border-border bg-bg-elevated p-5 transition duration-300 hover:border-accent/40 hover:shadow-[0_12px_40px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] sm:p-7 [@media(hover:hover)]:hover:-translate-y-0.5"
               >
                 <div className="mb-5 flex items-center gap-3">
@@ -163,17 +185,17 @@ export default function Skills({
 
                 <ul className="flex flex-wrap gap-2.5" aria-label={`${group.category} skills`}>
                   {group.items.map((skill) => (
-                    <motion.li key={skill} variants={chipV}>
+                    <li key={skill}>
                       <span className="inline-flex min-h-9 max-w-full items-center rounded-full border border-border bg-bg px-3.5 py-1.5 text-left text-sm font-medium wrap-break-word text-fg transition duration-300 hover:border-accent/50 hover:bg-accent-muted hover:text-accent hover:shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent)_25%,transparent)] [@media(hover:hover)]:hover:scale-105">
                         {skill}
                       </span>
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
-              </motion.li>
+              </li>
             )
           })}
-        </motion.ul>
+        </ul>
       </div>
     </section>
   )

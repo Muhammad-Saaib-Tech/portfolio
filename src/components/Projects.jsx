@@ -1,23 +1,16 @@
-// Projects — card grid with layoutId expand-to-detail modal overlay.
-import { useCallback, useEffect, useState } from 'react'
+// Projects — GSAP scrubbed card grid; Framer Motion kept for modal morph/hover.
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, X } from 'lucide-react'
 import { projects } from '../data/content'
-import Heading from './Heading'
+import ScrollHeading from './ScrollHeading'
 import {
   duration,
   ease,
-  getRevealProps,
-  headerVariants,
-  maskScaleVariants,
-  projectCardDelay,
   revealTransition,
   revealTransitionFast,
-  scrollVariants,
-  scrollViewport,
-  simpleFadeVariants,
-  tourMaskScaleVariants,
 } from '../lib/motion'
+import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 function canUseLayoutMorph() {
   if (typeof window === 'undefined') return false
@@ -78,39 +71,24 @@ function ProjectCardFace({ project, compact = false }) {
   )
 }
 
-function ProjectsCondensed({ reduceMotion, tourActive }) {
-  const cardV = scrollVariants(tourMaskScaleVariants, reduceMotion)
-
+function ProjectsCondensed() {
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
         Projects
       </p>
-      <Heading
-        as="h2"
+      <ScrollHeading
+        text="Selected work"
         className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
-      >
-        Selected work
-      </Heading>
+        animateWords={false}
+        enabled={false}
+      />
 
-      <motion.ul
-        className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible [&::-webkit-scrollbar]:hidden"
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0, delayChildren: 0 } },
-        }}
-        {...getRevealProps(true, scrollViewport, tourActive)}
-      >
-        {projects.map((project, index) => (
-          <motion.li
+      <ul className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+        {projects.map((project) => (
+          <li
             key={project.id}
-            variants={cardV}
-            transition={
-              reduceMotion
-                ? undefined
-                : { delay: projectCardDelay(index, 3), duration: 0.45, ease }
-            }
-            className="min-w-[200px] shrink-0 origin-center rounded-lg border border-border bg-bg-elevated p-3.5 sm:min-w-0"
+            className="min-w-[200px] shrink-0 rounded-lg border border-border bg-bg-elevated p-3.5 sm:min-w-0"
           >
             <div className="flex items-start justify-between gap-2">
               <TypeTag type={project.type} className="text-[10px]" />
@@ -133,9 +111,9 @@ function ProjectsCondensed({ reduceMotion, tourActive }) {
                 </li>
               ))}
             </ul>
-          </motion.li>
+          </li>
         ))}
-      </motion.ul>
+      </ul>
     </>
   )
 }
@@ -267,28 +245,71 @@ function ProjectDetail({ project, onClose, layoutId, useMorph }) {
 export default function Projects({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
+  const sectionRef = useRef(null)
   const [selectedId, setSelectedId] = useState(null)
   const [useMorph, setUseMorph] = useState(false)
   const reduceMotion = useReducedMotion()
+  const gsapEnabled = !presentation
 
   const selected = projects.find((p) => p.id === selectedId) ?? null
   const morphEnabled = useMorph && !reduceMotion && !presentation && !condensed
-  const headerV = scrollVariants(headerVariants, reduceMotion)
-  const cardV = scrollVariants(
-    presentation ? tourMaskScaleVariants : maskScaleVariants,
-    reduceMotion,
-  )
-  const gridV = reduceMotion
-    ? simpleFadeVariants
-    : {
-        hidden: {},
-        visible: {
-          transition: { staggerChildren: 0, delayChildren: 0 },
-        },
+
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, root }) => {
+      const header = root.querySelector('[data-projects-header]')
+      const cards = root.querySelectorAll('[data-project-card]')
+
+      if (reduced) {
+        gsap.from([header, ...cards].filter(Boolean), {
+          opacity: 0,
+          y: 16,
+          duration: 0.4,
+          stagger: 0.06,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        })
+        return
       }
-  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: SECTION_START,
+            end: SECTION_END,
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (cards.length) {
+        gsap.from(cards, {
+          opacity: 0,
+          y: 36,
+          scale: 0.96,
+          ease: 'none',
+          stagger: {
+            each: 0.08,
+            from: 'start',
+            grid: 'auto',
+          },
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 70%',
+            end: 'top 25%',
+            scrub: SCRUB,
+          },
+        })
+      }
+    },
+    [],
+    { enabled: gsapEnabled },
+  )
 
   const close = useCallback(() => setSelectedId(null), [])
 
@@ -332,13 +353,14 @@ export default function Projects({
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Projects">
-        <ProjectsCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
+        <ProjectsCondensed />
       </section>
     )
   }
 
   return (
     <section
+      ref={sectionRef}
       id={presentation ? undefined : 'projects'}
       className={`relative ${
         presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
@@ -346,46 +368,35 @@ export default function Projects({
       aria-labelledby="projects-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
+        <div data-projects-header data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Projects
           </p>
-          <Heading
-            as="h2"
+          <ScrollHeading
+            text="Selected work"
             id={presentation ? undefined : 'projects-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
-          >
-            Selected work
-          </Heading>
+            enabled={gsapEnabled}
+          />
           <p className="mt-4 text-base leading-relaxed text-fg-muted sm:text-lg">
             A mix of product builds, libraries, and client-facing platforms
             across .NET, Blazor, Angular, and Flutter.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.ul
-          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-          variants={gridV}
-          {...reveal()}
-        >
-          {projects.map((project, index) => {
+        <ul className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => {
             const isOpen = selectedId === project.id
             const layoutId = `project-card-${project.id}`
 
             return (
-              <motion.li
+              <li
                 key={project.id}
-                variants={cardV}
-                transition={
-                  reduceMotion
-                    ? undefined
-                    : {
-                        ...revealTransition,
-                        delay: projectCardDelay(index, 3),
-                      }
-                }
+                data-project-card
+                data-gsap-reveal
                 className="min-h-46 min-w-0 origin-center"
-              >                {isOpen ? (
+              >
+                {isOpen ? (
                   <div
                     className="h-full rounded-lg border border-transparent p-5 opacity-0 sm:p-6"
                     aria-hidden="true"
@@ -415,10 +426,10 @@ export default function Projects({
                     </span>
                   </motion.button>
                 )}
-              </motion.li>
+              </li>
             )
           })}
-        </motion.ul>
+        </ul>
       </div>
 
       <AnimatePresence>

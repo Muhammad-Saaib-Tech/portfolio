@@ -1,24 +1,11 @@
-// Experience — vertical job timeline with collapsible project achievement lists.
+// Experience — GSAP pin + scrubbed timeline draw (pin disabled on mobile).
 import { useRef, useState } from 'react'
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, MapPin } from 'lucide-react'
 import { experience } from '../data/content'
-import Heading from './Heading'
-import {
-  getRevealProps,
-  headerVariants,
-  revealTransitionFast,
-  scrollVariants,
-  scrollViewport,
-  tiltInUpVariants,
-  tourTiltVariants,
-} from '../lib/motion'
+import ScrollHeading from './ScrollHeading'
+import { revealTransitionFast } from '../lib/motion'
+import { useGsapScroll, SCRUB } from '../hooks/useGsapScroll'
 
 function ProjectBlock({ project, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -78,35 +65,24 @@ function ProjectBlock({ project, defaultOpen = false }) {
   )
 }
 
-function ExperienceCondensed({ reduceMotion, tourActive }) {
-  const entryV = scrollVariants(tourTiltVariants, reduceMotion)
-
+function ExperienceCondensed() {
   return (
     <>
       <p className="mb-2 text-sm font-medium uppercase tracking-[0.18em] text-accent">
         Experience
       </p>
-      <Heading
-        as="h2"
+      <ScrollHeading
+        text="Where I've built"
         className="text-2xl font-bold tracking-tight text-fg sm:text-3xl"
-      >
-        Where I've built
-      </Heading>
+        animateWords={false}
+        enabled={false}
+      />
 
-      <div
-        className="mt-6 space-y-5"
-        style={{ perspective: reduceMotion ? undefined : 1000 }}
-      >
-        {experience.map((job, jobIndex) => (
-          <motion.article
+      <div className="mt-6 space-y-5">
+        {experience.map((job) => (
+          <article
             key={job.id}
-            variants={entryV}
-            {...getRevealProps(true, scrollViewport, tourActive)}
-            transition={
-              reduceMotion ? undefined : { delay: jobIndex * 0.08 }
-            }
-            className="origin-center rounded-lg border border-border bg-bg-elevated p-4 sm:p-5"
-            style={{ transformStyle: 'preserve-3d' }}
+            className="rounded-lg border border-border bg-bg-elevated p-4 sm:p-5"
           >
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <h3 className="font-display text-base font-semibold text-fg sm:text-lg">
@@ -145,69 +121,134 @@ function ExperienceCondensed({ reduceMotion, tourActive }) {
                 </li>
               ))}
             </ul>
-          </motion.article>
+          </article>
         ))}
       </div>
     </>
   )
 }
 
-function TimelineRail({ trackRef, reduceMotion }) {
-  const { scrollYProgress } = useScroll({
-    target: trackRef,
-    offset: ['start 0.85', 'end 0.35'],
-  })
-  const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1])
-
-  if (reduceMotion) {
-    return (
-      <div
-        className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
-        aria-hidden="true"
-      />
-    )
-  }
-
-  return (
-    <div
-      className="absolute bottom-2 left-[0.4375rem] top-2 w-px overflow-hidden sm:left-2.75"
-      aria-hidden="true"
-    >
-      <div className="absolute inset-0 bg-border/40" />
-      <motion.div
-        className="absolute inset-x-0 top-0 h-full origin-top bg-accent/70"
-        style={{ scaleY }}
-      />
-    </div>
-  )
-}
-
 export default function Experience({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
-  const reduceMotion = useReducedMotion()
+  const sectionRef = useRef(null)
   const trackRef = useRef(null)
+  const gsapEnabled = !presentation
+
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, isMobile, root }) => {
+      const header = root.querySelector('[data-exp-header]')
+      const track = trackRef.current
+      const line = root.querySelector('[data-exp-line]')
+      const entries = root.querySelectorAll('[data-exp-entry]')
+
+      if (reduced) {
+        gsap.from([header, ...entries].filter(Boolean), {
+          opacity: 0,
+          y: 16,
+          duration: 0.4,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        })
+        if (line) gsap.set(line, { scaleY: 1 })
+        return
+      }
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 80%',
+            end: 'top 50%',
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (!track || !entries.length) return
+
+      // Mobile: scrub without pin (address-bar viewport changes make pin unreliable)
+      if (isMobile) {
+        if (line) {
+          gsap.fromTo(
+            line,
+            { scaleY: 0 },
+            {
+              scaleY: 1,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: track,
+                start: 'top 75%',
+                end: 'bottom 40%',
+                scrub: SCRUB,
+              },
+            },
+          )
+        }
+        gsap.from(entries, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          stagger: 0.15,
+          scrollTrigger: {
+            trigger: track,
+            start: 'top 70%',
+            end: 'bottom 45%',
+            scrub: SCRUB,
+          },
+        })
+        return
+      }
+
+      // Desktop: brief pin while line draws + entries reveal, then natural scroll
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: track,
+          start: 'top 20%',
+          end: '+=75%',
+          pin: true,
+          scrub: SCRUB,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      if (line) {
+        tl.fromTo(line, { scaleY: 0 }, { scaleY: 1, ease: 'none' }, 0)
+      }
+
+      tl.from(
+        entries,
+        {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          stagger: 0.2,
+        },
+        0.05,
+      )
+    },
+    [],
+    { enabled: gsapEnabled },
+  )
 
   if (presentation && condensed) {
     return (
       <section className="relative w-full py-6 sm:py-8" aria-label="Experience">
-        <ExperienceCondensed reduceMotion={reduceMotion} tourActive={tourActive} />
+        <ExperienceCondensed />
       </section>
     )
   }
 
-  const headerV = scrollVariants(headerVariants, reduceMotion)
-  const entryV = scrollVariants(
-    presentation ? tourTiltVariants : tiltInUpVariants,
-    reduceMotion,
-  )
-  const reveal = (vp = scrollViewport) =>
-    getRevealProps(presentation, vp, tourActive)
-
   return (
     <section
+      ref={sectionRef}
       id={presentation ? undefined : 'experience'}
       className={`relative ${
         presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
@@ -215,49 +256,42 @@ export default function Experience({
       aria-labelledby="experience-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
+        <div data-exp-header data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Experience
           </p>
-          <Heading
-            as="h2"
+          <ScrollHeading
+            text="Where I've built"
             id={presentation ? undefined : 'experience-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
-          >
-            Where I've built
-          </Heading>
+            enabled={gsapEnabled}
+          />
           <p className="mt-4 text-base leading-relaxed text-fg-muted sm:text-lg">
             Enterprise modules and platforms shipped end-to-end — expand each
             project for the full story.
           </p>
-        </motion.div>
+        </div>
 
-        <div
-          ref={trackRef}
-          className="relative mt-12"
-          style={{
-            perspective: reduceMotion ? undefined : 1200,
-          }}
-        >
-          {!presentation ? (
-            <TimelineRail trackRef={trackRef} reduceMotion={reduceMotion} />
-          ) : (
+        <div ref={trackRef} className="relative mt-12">
+          <div
+            className="absolute bottom-2 left-[0.4375rem] top-2 w-px overflow-hidden sm:left-2.75"
+            aria-hidden="true"
+          >
+            <div className="absolute inset-0 bg-border/40" />
             <div
-              className="absolute bottom-2 left-[0.4375rem] top-2 w-px bg-border sm:left-2.75"
-              aria-hidden="true"
+              data-exp-line
+              data-gsap-reveal
+              className="absolute inset-x-0 top-0 h-full origin-top bg-accent/70"
+              style={{ transform: 'scaleY(1)' }}
             />
-          )}
+          </div>
 
-          {experience.map((job, jobIndex) => (
-            <motion.article
+          {experience.map((job) => (
+            <article
               key={job.id}
-              variants={entryV}
-              {...reveal({ ...scrollViewport, amount: 0.15 })}
-              transition={
-                reduceMotion ? undefined : { delay: jobIndex * 0.1 }
-              }
-              className="relative min-w-0 origin-center pl-7 sm:pl-10"
-              style={{ transformStyle: 'preserve-3d' }}
+              data-exp-entry
+              data-gsap-reveal
+              className="relative min-w-0 pl-7 sm:pl-10"
             >
               <div
                 className="absolute left-0 top-2 flex size-3.5 items-center justify-center rounded-full border-2 border-accent bg-bg sm:left-1 sm:size-4.5"
@@ -285,7 +319,7 @@ export default function Experience({
                   <ProjectBlock key={project.name} project={project} />
                 ))}
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </div>

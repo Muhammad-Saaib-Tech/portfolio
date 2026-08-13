@@ -1,34 +1,71 @@
-// Education — degree card with institution details and coursework tags.
-import { motion, useReducedMotion } from 'framer-motion'
+// Education — calm scrubbed fade + slight upward motion (no clip-path).
+import { useRef } from 'react'
 import { GraduationCap } from 'lucide-react'
 import { education } from '../data/content'
-import Heading from './Heading'
-import {
-  clipWipeVariants,
-  getRevealProps,
-  headerVariants,
-  scrollVariants,
-  scrollViewport,
-  tourClipWipeVariants,
-} from '../lib/motion'
+import ScrollHeading from './ScrollHeading'
+import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 export default function Education({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
-  const reduceMotion = useReducedMotion()
+  const sectionRef = useRef(null)
   void condensed
+  const gsapEnabled = !presentation
 
-  const headerV = scrollVariants(headerVariants, reduceMotion)
-  const cardV = scrollVariants(
-    presentation ? tourClipWipeVariants : clipWipeVariants,
-    reduceMotion,
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, root }) => {
+      const header = root.querySelector('[data-edu-header]')
+      const card = root.querySelector('[data-edu-card]')
+
+      if (reduced) {
+        gsap.from([header, card].filter(Boolean), {
+          opacity: 0,
+          y: 14,
+          duration: 0.4,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        })
+        return
+      }
+
+      if (header) {
+        gsap.from(header, {
+          opacity: 0,
+          y: 20,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: SECTION_START,
+            end: SECTION_END,
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (card) {
+        gsap.from(card, {
+          opacity: 0,
+          y: 28,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 78%',
+            end: 'top 45%',
+            scrub: SCRUB,
+          },
+        })
+      }
+    },
+    [],
+    { enabled: gsapEnabled },
   )
-  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
 
   return (
     <section
+      ref={sectionRef}
       id={presentation ? undefined : 'education'}
       className={`relative ${
         presentation ? 'w-full py-8 sm:py-10' : 'scroll-mt-20 py-24 sm:py-28'
@@ -36,22 +73,23 @@ export default function Education({
       aria-labelledby="education-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <motion.div variants={headerV} {...reveal()} className="max-w-2xl">
+        <div data-edu-header data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Education
           </p>
-          <Heading
-            as="h2"
+          <ScrollHeading
+            text="Academic foundation"
             id={presentation ? undefined : 'education-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
-          >
-            Academic foundation
-          </Heading>
-        </motion.div>
+            animateWords={false}
+            enabled={gsapEnabled}
+          />
+        </div>
 
-        <motion.div
-          variants={cardV}
-          {...reveal()}
+        {/* Always in the DOM and visible by default — GSAP only tweaks opacity/y */}
+        <div
+          data-edu-card
+          data-gsap-reveal
           className="mt-6 max-w-3xl rounded-lg border border-border bg-bg-elevated p-5 sm:mt-8 sm:p-6"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
@@ -85,7 +123,7 @@ export default function Education({
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

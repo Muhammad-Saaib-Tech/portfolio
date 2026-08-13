@@ -1,18 +1,10 @@
-// Contact — footer with email/phone/LinkedIn icon links and CV download CTA.
-import { motion, useReducedMotion } from 'framer-motion'
+// Contact — calm GSAP fades; plain string heading (no scramble / WordReveal).
+import { useRef } from 'react'
 import { Mail, Phone, Download } from 'lucide-react'
 import { profile, languages } from '../data/content'
-import Heading from './Heading'
+import ScrollHeading from './ScrollHeading'
 import Magnetic from './Magnetic'
-import WordReveal from './WordReveal'
-import {
-  contactSpringVariants,
-  contactStaggerVariants,
-  getRevealProps,
-  scrollVariants,
-  scrollViewport,
-  simpleFadeVariants,
-} from '../lib/motion'
+import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 function LinkedInIcon({ size = 18, ...props }) {
   return (
@@ -28,6 +20,8 @@ function LinkedInIcon({ size = 18, ...props }) {
     </svg>
   )
 }
+
+const CONTACT_TITLE = "Let's work together"
 
 const contactLinks = [
   {
@@ -53,19 +47,82 @@ const contactLinks = [
 export default function Contact({
   presentation = false,
   condensed = false,
-  tourActive = true,
 }) {
+  const sectionRef = useRef(null)
   const year = new Date().getFullYear()
-  const reduceMotion = useReducedMotion()
   void condensed
+  const gsapEnabled = !presentation
+  const title =
+    typeof CONTACT_TITLE === 'string' ? CONTACT_TITLE : "Let's work together"
 
-  const listV = reduceMotion ? simpleFadeVariants : contactStaggerVariants
-  const itemV = scrollVariants(contactSpringVariants, reduceMotion)
-  const footerV = simpleFadeVariants
-  const reveal = () => getRevealProps(presentation, scrollViewport, tourActive)
+  useGsapScroll(
+    sectionRef,
+    ({ gsap, reduced, root }) => {
+      const heading = root.querySelector('[data-contact-heading]')
+      const items = root.querySelectorAll('[data-contact-item]')
+      const footer = root.querySelector('[data-contact-footer]')
+
+      if (reduced) {
+        gsap.from([heading, ...items, footer].filter(Boolean), {
+          opacity: 0,
+          y: 12,
+          duration: 0.35,
+          stagger: 0.05,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: root, start: 'top 88%', once: true },
+        })
+        return
+      }
+
+      if (heading) {
+        gsap.from(heading, {
+          opacity: 0,
+          y: 18,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: root,
+            start: SECTION_START,
+            end: SECTION_END,
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (items.length) {
+        gsap.from(items, {
+          opacity: 0,
+          y: 20,
+          ease: 'none',
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: root,
+            start: 'top 75%',
+            end: 'top 45%',
+            scrub: SCRUB,
+          },
+        })
+      }
+
+      if (footer) {
+        gsap.from(footer, {
+          opacity: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: footer,
+            start: 'top 95%',
+            end: 'top 80%',
+            scrub: SCRUB,
+          },
+        })
+      }
+    },
+    [],
+    { enabled: gsapEnabled },
+  )
 
   return (
     <section
+      ref={sectionRef}
       id={presentation ? undefined : 'contact'}
       className={`relative ${
         presentation
@@ -75,36 +132,27 @@ export default function Contact({
       aria-labelledby="contact-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="max-w-2xl">
+        <div data-contact-heading data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Contact
           </p>
-          <Heading
-            as="h2"
+          <ScrollHeading
+            text={title}
             id={presentation ? undefined : 'contact-heading'}
             className="text-3xl font-bold tracking-tight text-fg sm:text-4xl"
-          >
-            <WordReveal
-              text="Let's work together"
-              presentation={presentation}
-              active={tourActive}
-              mode="chars"
-            />
-          </Heading>
+            animateWords={false}
+            enabled={gsapEnabled}
+          />
           <p className="mt-4 text-base leading-relaxed text-fg-muted sm:text-lg">
             Open to full-stack .NET roles, consulting, and collaboration —
             reach out anytime.
           </p>
         </div>
 
-        <motion.div
-          variants={listV}
-          {...reveal()}
-          className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
-        >
+        <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
           <ul className="flex min-w-0 flex-col gap-2">
             {contactLinks.map(({ id, label, href, icon: Icon }) => (
-              <motion.li key={id} variants={itemV}>
+              <li key={id} data-contact-item data-gsap-reveal>
                 <a
                   href={href}
                   target={id === 'linkedin' ? '_blank' : undefined}
@@ -118,11 +166,11 @@ export default function Contact({
                     {label}
                   </span>
                 </a>
-              </motion.li>
+              </li>
             ))}
           </ul>
 
-          <motion.div variants={itemV} className="w-full sm:w-auto">
+          <div data-contact-item data-gsap-reveal className="w-full sm:w-auto">
             <Magnetic className="w-full sm:w-auto">
               <a
                 href={profile.cvUrl}
@@ -133,16 +181,14 @@ export default function Contact({
                 Download CV
               </a>
             </Magnetic>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       {!presentation ? (
-        <motion.footer
-          variants={footerV}
-          initial="hidden"
-          whileInView="visible"
-          viewport={scrollViewport}
+        <footer
+          data-contact-footer
+          data-gsap-reveal
           className="mt-16 border-t border-border py-8 sm:mt-20"
         >
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-center text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:text-left">
@@ -164,7 +210,7 @@ export default function Contact({
             </ul>
             <p className="order-2 text-xs sm:order-3">Full-Stack .NET Developer · Islamabad</p>
           </div>
-        </motion.footer>
+        </footer>
       ) : null}
     </section>
   )

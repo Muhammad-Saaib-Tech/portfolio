@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
+import { registerGsap } from './lib/gsapSetup'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -17,6 +18,8 @@ import IntroTour, {
   shouldSkipTourForDeepLink,
 } from './components/IntroTour'
 import { ThemeProvider } from './context/ThemeContext'
+
+registerGsap()
 
 function AppShell() {
   const [introReady, setIntroReady] = useState(false)
