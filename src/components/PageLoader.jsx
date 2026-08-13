@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { profile } from '../data/content'
-import { duration, ease, revealTransition } from '../lib/motion'
+import { ease, revealTransition } from '../lib/motion'
 
 const SESSION_KEY = 'mz-portfolio-intro-seen'
 
@@ -51,7 +51,7 @@ export default function PageLoader({ onComplete }) {
 
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const hold = window.setTimeout(() => setVisible(false), 480)
+    const hold = window.setTimeout(() => setVisible(false), 320)
     return () => {
       window.clearTimeout(hold)
       document.body.style.overflow = prevOverflow
@@ -66,7 +66,7 @@ export default function PageLoader({ onComplete }) {
           className="fixed inset-0 z-120 flex items-center justify-center bg-bg"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: duration.base, ease }}
+          transition={{ duration: 0.35, ease }}
           aria-hidden="true"
         >
           <motion.div

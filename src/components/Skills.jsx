@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { Server, Layout, Database, Container } from 'lucide-react'
 import { skills } from '../data/content'
 import ScrollHeading from './ScrollHeading'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const categoryIcons = {
   Backend: Server,
@@ -79,49 +79,33 @@ export default function Skills({
 
   useGsapScroll(
     sectionRef,
-    ({ gsap, reduced, root }) => {
+    ({ scrubReveal, reduced, root }) => {
       const header = root.querySelector('[data-skills-header]')
+      const grid = root.querySelector('[data-skills-grid]')
       const panels = root.querySelectorAll('[data-skills-panel]')
 
       if (reduced) {
-        gsap.from([header, ...panels].filter(Boolean), {
-          opacity: 0,
-          y: 16,
-          duration: 0.4,
-          stagger: 0.08,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        scrubReveal([header, ...panels], { y: 16, stagger: 0.06, duration: 0.35 }, {
+          trigger: header || root,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
       if (header) {
-        gsap.from(header, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: SECTION_START,
-            end: SECTION_END,
-            scrub: SCRUB,
-          },
+        scrubReveal(header, { y: 22 }, {
+          trigger: header,
+          start: SECTION_START,
+          end: SECTION_END,
         })
       }
 
       if (panels.length) {
-        gsap.from(panels, {
-          opacity: 0,
-          y: 32,
-          scale: 0.97,
-          ease: 'none',
-          stagger: 0.12,
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 72%',
-            end: 'top 28%',
-            scrub: SCRUB,
-          },
+        scrubReveal(panels, { y: 24, scale: 0.98, stagger: 0.07 }, {
+          trigger: grid || panels[0],
+          start: 'top 90%',
+          end: 'top 62%',
         })
       }
     },
@@ -163,7 +147,10 @@ export default function Skills({
           </p>
         </div>
 
-        <ul className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <ul
+          data-skills-grid
+          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2"
+        >
           {skills.map((group) => {
             const Icon = categoryIcons[group.category] ?? Server
 

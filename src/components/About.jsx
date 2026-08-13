@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { about, profile } from '../data/content'
 import ScrollHeading from './ScrollHeading'
 import ParallaxLayer from './ParallaxLayer'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const stackPreview = ['.NET Core', 'Angular', 'Blazor', 'PostgreSQL', 'RabbitMQ']
 
@@ -112,82 +112,36 @@ export default function About({
 
   useGsapScroll(
     sectionRef,
-    ({ gsap, reduced, root }) => {
+    ({ scrubReveal, reduced, root }) => {
       const header = root.querySelector('[data-about-header]')
       const bio = root.querySelector('[data-about-bio]')
       const chips = root.querySelectorAll('[data-about-chip]')
       const card = root.querySelector('[data-about-card]')
 
-      const targets = [header, bio, card, ...chips].filter(Boolean)
-
       if (reduced) {
-        gsap.from(targets, {
-          opacity: 0,
-          y: 16,
-          duration: 0.4,
-          stagger: 0.06,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        scrubReveal([header, bio, card, ...chips], { y: 16, stagger: 0.05, duration: 0.35 }, {
+          trigger: header || root,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
       if (header) {
-        gsap.from(header, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: SECTION_START,
-            end: SECTION_END,
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(header, { y: 22 }, { trigger: header, start: SECTION_START, end: SECTION_END })
       }
-
       if (bio) {
-        gsap.from(bio, {
-          opacity: 0,
-          y: 36,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 75%',
-            end: 'top 40%',
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(bio, { y: 28 }, { trigger: bio, start: 'top 90%', end: 'top 62%' })
       }
-
       if (chips.length) {
-        gsap.from(chips, {
-          opacity: 0,
-          y: 14,
-          ease: 'none',
-          stagger: 0.05,
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 70%',
-            end: 'top 40%',
-            scrub: SCRUB,
-          },
+        scrubReveal(chips, { y: 12, stagger: 0.03 }, {
+          trigger: chips[0],
+          start: 'top 92%',
+          end: 'top 68%',
         })
       }
-
       if (card) {
-        gsap.from(card, {
-          opacity: 0,
-          y: 40,
-          x: 24,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 70%',
-            end: 'top 35%',
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(card, { y: 30, x: 16 }, { trigger: card, start: 'top 90%', end: 'top 58%' })
       }
     },
     [],

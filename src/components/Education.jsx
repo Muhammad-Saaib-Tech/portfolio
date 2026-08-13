@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { GraduationCap } from 'lucide-react'
 import { education } from '../data/content'
 import ScrollHeading from './ScrollHeading'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 export default function Education({
   presentation = false,
@@ -15,48 +15,24 @@ export default function Education({
 
   useGsapScroll(
     sectionRef,
-    ({ gsap, reduced, root }) => {
+    ({ scrubReveal, reduced, root }) => {
       const header = root.querySelector('[data-edu-header]')
       const card = root.querySelector('[data-edu-card]')
 
       if (reduced) {
-        gsap.from([header, card].filter(Boolean), {
-          opacity: 0,
-          y: 14,
-          duration: 0.4,
-          stagger: 0.08,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        scrubReveal([header, card], { y: 14, stagger: 0.06, duration: 0.35 }, {
+          trigger: header || root,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
       if (header) {
-        gsap.from(header, {
-          opacity: 0,
-          y: 20,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: SECTION_START,
-            end: SECTION_END,
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(header, { y: 16 }, { trigger: header, start: SECTION_START, end: SECTION_END })
       }
-
       if (card) {
-        gsap.from(card, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 78%',
-            end: 'top 45%',
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(card, { y: 20 }, { trigger: card, start: 'top 92%', end: 'top 64%' })
       }
     },
     [],

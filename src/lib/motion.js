@@ -1,18 +1,18 @@
 // Shared Framer Motion tokens — hover, hero load, modals, cursor (not scroll reveals).
 export const ease = [0.22, 1, 0.36, 1]
 
-/** Canonical durations (seconds) */
+/** Canonical durations (seconds) — snappier site-wide */
 export const duration = {
-  fast: 0.35,
-  base: 0.55,
-  slow: 0.65,
+  fast: 0.28,
+  base: 0.4,
+  slow: 0.48,
 }
 
 /** Canonical stagger gaps */
 export const stagger = {
-  children: 0.1,
-  items: 0.06,
-  delay: 0.08,
+  children: 0.07,
+  items: 0.04,
+  delay: 0.05,
 }
 
 /** Default transition for interactive / hero motion */
@@ -45,7 +45,7 @@ export const heroContainerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: stagger.children,
-      delayChildren: 0.12,
+      delayChildren: 0.06,
     },
   },
 }

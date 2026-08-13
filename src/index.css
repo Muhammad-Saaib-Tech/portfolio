@@ -56,6 +56,11 @@
       scroll-behavior: auto;
       scroll-snap-type: none;
     }
+
+    [data-gsap-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 
   /* Major section stops only — not aggressive mandatory snapping */

@@ -5,7 +5,7 @@ import { ChevronDown, MapPin } from 'lucide-react'
 import { experience } from '../data/content'
 import ScrollHeading from './ScrollHeading'
 import { revealTransitionFast } from '../lib/motion'
-import { useGsapScroll, SCRUB } from '../hooks/useGsapScroll'
+import { useGsapScroll, SCRUB, REVEAL_EASE, scrubReveal, revealTargets } from '../hooks/useGsapScroll'
 
 function ProjectBlock({ project, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -144,36 +144,43 @@ export default function Experience({
       const line = root.querySelector('[data-exp-line]')
       const entries = root.querySelectorAll('[data-exp-entry]')
 
+      const showEntries = () => {
+        revealTargets(entries)
+        if (line) gsap.set(line, { scaleY: 1, clearProps: 'transform' })
+      }
+
       if (reduced) {
-        gsap.from([header, ...entries].filter(Boolean), {
-          opacity: 0,
-          y: 16,
-          duration: 0.4,
-          stagger: 0.1,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        scrubReveal([header, ...entries], { y: 16, stagger: 0.08, duration: 0.35 }, {
+          trigger: header || root,
+          start: 'top 88%',
+          once: true,
         })
         if (line) gsap.set(line, { scaleY: 1 })
         return
       }
 
       if (header) {
-        gsap.from(header, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 80%',
-            end: 'top 50%',
-            scrub: SCRUB,
-          },
+        scrubReveal(header, { y: 22 }, {
+          trigger: header,
+          start: 'top 85%',
+          end: 'top 58%',
         })
       }
 
       if (!track || !entries.length) return
 
-      // Mobile: scrub without pin (address-bar viewport changes make pin unreliable)
+      const safety = {
+        onRefresh(self) {
+          if (self.scroll() >= self.end || self.progress >= 0.98) {
+            self.animation?.progress(1)
+            showEntries()
+          }
+        },
+        onLeave() {
+          showEntries()
+        },
+      }
+
       if (isMobile) {
         if (line) {
           gsap.fromTo(
@@ -181,57 +188,52 @@ export default function Experience({
             { scaleY: 0 },
             {
               scaleY: 1,
-              ease: 'none',
+              ease: REVEAL_EASE,
+              immediateRender: false,
               scrollTrigger: {
                 trigger: track,
-                start: 'top 75%',
-                end: 'bottom 40%',
+                start: 'top 80%',
+                end: 'bottom 58%',
                 scrub: SCRUB,
+                invalidateOnRefresh: true,
+                markers: false,
+                ...safety,
               },
             },
           )
         }
-        gsap.from(entries, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          stagger: 0.15,
-          scrollTrigger: {
-            trigger: track,
-            start: 'top 70%',
-            end: 'bottom 45%',
-            scrub: SCRUB,
-          },
+        scrubReveal(entries, { y: 20, stagger: 0.08 }, {
+          trigger: entries[0],
+          start: 'top 90%',
+          end: 'top 55%',
         })
         return
       }
 
-      // Desktop: brief pin while line draws + entries reveal, then natural scroll
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: track,
-          start: 'top 20%',
-          end: '+=75%',
+          start: 'top 22%',
+          end: '+=42%',
           pin: true,
           scrub: SCRUB,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          markers: false,
+          fastScrollEnd: true,
+          ...safety,
         },
       })
 
       if (line) {
-        tl.fromTo(line, { scaleY: 0 }, { scaleY: 1, ease: 'none' }, 0)
+        tl.fromTo(line, { scaleY: 0 }, { scaleY: 1, ease: REVEAL_EASE, immediateRender: false }, 0)
       }
 
-      tl.from(
+      tl.fromTo(
         entries,
-        {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          stagger: 0.2,
-        },
-        0.05,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, ease: REVEAL_EASE, stagger: 0.1, immediateRender: false },
+        0.02,
       )
     },
     [],

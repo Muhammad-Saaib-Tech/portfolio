@@ -4,7 +4,7 @@ import { Mail, Phone, Download } from 'lucide-react'
 import { profile, languages } from '../data/content'
 import ScrollHeading from './ScrollHeading'
 import Magnetic from './Magnetic'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 function LinkedInIcon({ size = 18, ...props }) {
   return (
@@ -57,63 +57,32 @@ export default function Contact({
 
   useGsapScroll(
     sectionRef,
-    ({ gsap, reduced, root }) => {
+    ({ scrubReveal, reduced, root }) => {
       const heading = root.querySelector('[data-contact-heading]')
       const items = root.querySelectorAll('[data-contact-item]')
       const footer = root.querySelector('[data-contact-footer]')
 
       if (reduced) {
-        gsap.from([heading, ...items, footer].filter(Boolean), {
-          opacity: 0,
-          y: 12,
-          duration: 0.35,
-          stagger: 0.05,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 88%', once: true },
+        scrubReveal([heading, ...items, footer], { y: 12, stagger: 0.04, duration: 0.32 }, {
+          trigger: heading || root,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
       if (heading) {
-        gsap.from(heading, {
-          opacity: 0,
-          y: 18,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: SECTION_START,
-            end: SECTION_END,
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(heading, { y: 14 }, { trigger: heading, start: SECTION_START, end: SECTION_END })
       }
-
       if (items.length) {
-        gsap.from(items, {
-          opacity: 0,
-          y: 20,
-          ease: 'none',
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 75%',
-            end: 'top 45%',
-            scrub: SCRUB,
-          },
+        scrubReveal(items, { y: 14, stagger: 0.055 }, {
+          trigger: items[0],
+          start: 'top 92%',
+          end: 'top 68%',
         })
       }
-
       if (footer) {
-        gsap.from(footer, {
-          opacity: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: footer,
-            start: 'top 95%',
-            end: 'top 80%',
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(footer, { y: 0 }, { trigger: footer, start: 'top 96%', end: 'top 85%' })
       }
     },
     [],

@@ -1,6 +1,6 @@
 // Section heading with optional GSAP word-stagger reveal. Always takes a plain string.
 import { useRef } from 'react'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 /**
  * @param {{
@@ -26,38 +26,24 @@ export default function ScrollHeading({
 
   useGsapScroll(
     ref,
-    ({ gsap, reduced }) => {
+    ({ scrubReveal, reduced }) => {
       if (!animateWords || !words.length) return
       const wordEls = ref.current?.querySelectorAll('[data-word]')
       if (!wordEls?.length) return
 
       if (reduced) {
-        gsap.from(wordEls, {
-          opacity: 0,
-          y: 12,
-          duration: 0.35,
-          stagger: 0.04,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: ref.current,
-            start: 'top 88%',
-            once: true,
-          },
+        scrubReveal(wordEls, { y: 12, stagger: 0.04, duration: 0.32 }, {
+          trigger: ref.current,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
-      gsap.from(wordEls, {
-        opacity: 0,
-        y: 22,
-        ease: 'none',
-        stagger: 0.06,
-        scrollTrigger: {
-          trigger: ref.current,
-          start: SECTION_START,
-          end: SECTION_END,
-          scrub: SCRUB,
-        },
+      scrubReveal(wordEls, { y: 16, stagger: 0.035 }, {
+        trigger: ref.current,
+        start: SECTION_START,
+        end: SECTION_END,
       })
     },
     [safeText, animateWords],

@@ -10,7 +10,7 @@ import {
   revealTransition,
   revealTransitionFast,
 } from '../lib/motion'
-import { useGsapScroll, SCRUB, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
+import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 function canUseLayoutMorph() {
   if (typeof window === 'undefined') return false
@@ -257,53 +257,28 @@ export default function Projects({
 
   useGsapScroll(
     sectionRef,
-    ({ gsap, reduced, root }) => {
+    ({ scrubReveal, reduced, root }) => {
       const header = root.querySelector('[data-projects-header]')
+      const grid = root.querySelector('[data-projects-grid]')
       const cards = root.querySelectorAll('[data-project-card]')
 
       if (reduced) {
-        gsap.from([header, ...cards].filter(Boolean), {
-          opacity: 0,
-          y: 16,
-          duration: 0.4,
-          stagger: 0.06,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: root, start: 'top 85%', once: true },
+        scrubReveal([header, ...cards], { y: 16, stagger: 0.05, duration: 0.35 }, {
+          trigger: header || root,
+          start: 'top 88%',
+          once: true,
         })
         return
       }
 
       if (header) {
-        gsap.from(header, {
-          opacity: 0,
-          y: 28,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root,
-            start: SECTION_START,
-            end: SECTION_END,
-            scrub: SCRUB,
-          },
-        })
+        scrubReveal(header, { y: 22 }, { trigger: header, start: SECTION_START, end: SECTION_END })
       }
-
       if (cards.length) {
-        gsap.from(cards, {
-          opacity: 0,
-          y: 36,
-          scale: 0.96,
-          ease: 'none',
-          stagger: {
-            each: 0.08,
-            from: 'start',
-            grid: 'auto',
-          },
-          scrollTrigger: {
-            trigger: root,
-            start: 'top 70%',
-            end: 'top 25%',
-            scrub: SCRUB,
-          },
+        scrubReveal(cards, { y: 26, scale: 0.97, stagger: 0.045 }, {
+          trigger: grid || cards[0],
+          start: 'top 90%',
+          end: 'top 58%',
         })
       }
     },
@@ -384,7 +359,10 @@ export default function Projects({
           </p>
         </div>
 
-        <ul className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <ul
+          data-projects-grid
+          className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+        >
           {projects.map((project) => {
             const isOpen = selectedId === project.id
             const layoutId = `project-card-${project.id}`

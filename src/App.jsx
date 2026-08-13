@@ -42,7 +42,7 @@ function AppShell() {
     }
 
     // Small delay so Hero entrance can begin before the floating tour overlays
-    const t = window.setTimeout(() => setTourActive(true), 320)
+    const t = window.setTimeout(() => setTourActive(true), 200)
     return () => window.clearTimeout(t)
   }, [introReady, reduceMotion])
 

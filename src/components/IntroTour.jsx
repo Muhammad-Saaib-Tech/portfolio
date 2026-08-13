@@ -19,7 +19,7 @@ import Education from './Education'
 import Contact from './Contact'
 
 /** Total seconds for Hero → Contact continuous flow */
-export const TOUR_PACE_SECONDS = 20
+export const TOUR_PACE_SECONDS = 10
 
 const SESSION_KEY = 'mz-portfolio-tour-seen'
 
