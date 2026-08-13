@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useReducedMotion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import About from './components/About'
@@ -10,22 +11,55 @@ import Contact from './components/Contact'
 import CustomCursor from './components/CustomCursor'
 import ScrollProgress from './components/ScrollProgress'
 import PageLoader from './components/PageLoader'
-import PresentationMode from './components/PresentationMode'
+import IntroTour, {
+  hasSeenTour,
+  markTourSeen,
+  shouldSkipTourForDeepLink,
+} from './components/IntroTour'
 import { ThemeProvider } from './context/ThemeContext'
-import { PresentationProvider, usePresentation } from './context/PresentationContext'
 
 function AppShell() {
   const [introReady, setIntroReady] = useState(false)
-  const handleIntroComplete = useCallback(() => setIntroReady(true), [])
-  const { isActive } = usePresentation()
+  const [tourActive, setTourActive] = useState(false)
+  const reduceMotion = useReducedMotion()
+
+  const handleIntroComplete = useCallback(() => {
+    setIntroReady(true)
+  }, [])
+
+  // Start intro tour after PageLoader, once per session (unless deep-link / reduced-motion)
+  useEffect(() => {
+    if (!introReady) return undefined
+    if (reduceMotion) {
+      markTourSeen()
+      return undefined
+    }
+    if (hasSeenTour() || shouldSkipTourForDeepLink()) {
+      return undefined
+    }
+
+    // Small delay so Hero entrance can begin before the floating tour overlays
+    const t = window.setTimeout(() => setTourActive(true), 320)
+    return () => window.clearTimeout(t)
+  }, [introReady, reduceMotion])
+
+  const handleTourFinish = useCallback((sectionId) => {
+    setTourActive(false)
+    requestAnimationFrame(() => {
+      const el = document.getElementById(sectionId)
+      if (el) {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' })
+      }
+    })
+  }, [])
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <PageLoader onComplete={handleIntroComplete} />
-      {!isActive ? <ScrollProgress /> : null}
+      <ScrollProgress />
       <CustomCursor />
-      {!isActive ? <Navbar /> : null}
-      <main aria-hidden={isActive || undefined}>
+      <Navbar />
+      <main>
         <Hero introReady={introReady} />
         <About />
         <Skills />
@@ -34,7 +68,7 @@ function AppShell() {
         <Education />
         <Contact />
       </main>
-      <PresentationMode />
+      <IntroTour active={tourActive} onFinish={handleTourFinish} />
     </div>
   )
 }
@@ -42,9 +76,7 @@ function AppShell() {
 function App() {
   return (
     <ThemeProvider>
-      <PresentationProvider>
-        <AppShell />
-      </PresentationProvider>
+      <AppShell />
     </ThemeProvider>
   )
 }

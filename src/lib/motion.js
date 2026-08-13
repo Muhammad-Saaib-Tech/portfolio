@@ -107,7 +107,7 @@ export const simpleFadeVariants = {
   },
 }
 
-/** whileInView vs forced animate for Presentation Mode */
+/** whileInView vs forced animate for tour / presentation overlays */
 export function getRevealProps(presentation, viewport = scrollViewport) {
   if (presentation) {
     return { initial: 'hidden', animate: 'visible' }
