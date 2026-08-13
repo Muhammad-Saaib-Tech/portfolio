@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { about, profile } from '../data/content'
 import ScrollHeading from './ScrollHeading'
 import ParallaxLayer from './ParallaxLayer'
+import SectionBackdrop from './SectionBackdrop'
 import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const stackPreview = ['.NET Core', 'Angular', 'Blazor', 'PostgreSQL', 'RabbitMQ']
@@ -157,7 +158,8 @@ export default function About({
       }`}
       aria-labelledby="about-heading"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      {!presentation ? <SectionBackdrop variant="diagonal" /> : null}
+      <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="min-w-0">
             <div data-about-header data-gsap-reveal>

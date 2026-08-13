@@ -111,4 +111,101 @@
       transparent 75%
     );
   }
+
+  /* --- Section decorative patterns (5–10% opacity, behind content) --- */
+
+  /* About — soft diagonal hairlines */
+  .section-pattern-diagonal {
+    opacity: 0.07;
+    background-image: repeating-linear-gradient(
+      -32deg,
+      transparent,
+      transparent 11px,
+      color-mix(in srgb, var(--color-fg-muted) 55%, transparent) 11px,
+      color-mix(in srgb, var(--color-fg-muted) 55%, transparent) 12px
+    );
+    mask-image: radial-gradient(
+      ellipse 75% 70% at 30% 40%,
+      black 15%,
+      transparent 72%
+    );
+  }
+
+  .dark .section-pattern-diagonal {
+    opacity: 0.09;
+  }
+
+  /* Skills — subtle dot grid */
+  .section-pattern-dots {
+    opacity: 0.08;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-fg-muted) 70%, transparent) 1px,
+      transparent 1.2px
+    );
+    background-size: 22px 22px;
+    background-position: 0 0;
+    mask-image: radial-gradient(
+      ellipse 80% 65% at 70% 45%,
+      black 20%,
+      transparent 75%
+    );
+  }
+
+  .dark .section-pattern-dots {
+    opacity: 0.1;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-accent) 35%, var(--color-fg-muted)) 1px,
+      transparent 1.2px
+    );
+  }
+
+  /* Education — soft radial glow wash */
+  .section-pattern-radial {
+    opacity: 1;
+    background-image:
+      radial-gradient(
+        ellipse 55% 45% at 15% 80%,
+        color-mix(in srgb, var(--color-accent) 8%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 50% 40% at 90% 20%,
+        color-mix(in srgb, var(--color-fg-muted) 7%, transparent),
+        transparent 65%
+      );
+  }
+
+  .dark .section-pattern-radial {
+    background-image:
+      radial-gradient(
+        ellipse 55% 45% at 15% 80%,
+        color-mix(in srgb, var(--color-accent) 10%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 50% 40% at 90% 20%,
+        color-mix(in srgb, var(--color-fg-muted) 6%, transparent),
+        transparent 65%
+      );
+  }
+
+  /* Contact — faint circuit / node lines via inline SVG data-URI */
+  .section-pattern-circuit {
+    opacity: 0.07;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none'%3E%3Cpath d='M8 48h24M64 48h24M48 8v24M48 64v24M32 48h32' stroke='%236b7280' stroke-width='1' stroke-opacity='0.55'/%3E%3Ccircle cx='48' cy='48' r='3' fill='%236b7280' fill-opacity='0.45'/%3E%3Ccircle cx='8' cy='48' r='2' fill='%236b7280' fill-opacity='0.4'/%3E%3Ccircle cx='88' cy='48' r='2' fill='%236b7280' fill-opacity='0.4'/%3E%3Ccircle cx='48' cy='8' r='2' fill='%236b7280' fill-opacity='0.4'/%3E%3Ccircle cx='48' cy='88' r='2' fill='%236b7280' fill-opacity='0.4'/%3E%3C/svg%3E");
+    background-size: 96px 96px;
+    mask-image: radial-gradient(
+      ellipse 70% 55% at 50% 30%,
+      black 10%,
+      transparent 70%
+    );
+  }
+
+  .dark .section-pattern-circuit {
+    opacity: 0.09;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none'%3E%3Cpath d='M8 48h24M64 48h24M48 8v24M48 64v24M32 48h32' stroke='%238b5cf6' stroke-width='1' stroke-opacity='0.4'/%3E%3Ccircle cx='48' cy='48' r='3' fill='%238b5cf6' fill-opacity='0.35'/%3E%3Ccircle cx='8' cy='48' r='2' fill='%239ca3af' fill-opacity='0.35'/%3E%3Ccircle cx='88' cy='48' r='2' fill='%239ca3af' fill-opacity='0.35'/%3E%3Ccircle cx='48' cy='8' r='2' fill='%239ca3af' fill-opacity='0.35'/%3E%3Ccircle cx='48' cy='88' r='2' fill='%239ca3af' fill-opacity='0.35'/%3E%3C/svg%3E");
+  }
 }

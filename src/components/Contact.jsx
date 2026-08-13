@@ -4,6 +4,7 @@ import { Mail, Phone, Download } from 'lucide-react'
 import { profile, languages } from '../data/content'
 import ScrollHeading from './ScrollHeading'
 import Magnetic from './Magnetic'
+import SectionBackdrop from './SectionBackdrop'
 import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 function LinkedInIcon({ size = 18, ...props }) {
@@ -93,14 +94,15 @@ export default function Contact({
     <section
       ref={sectionRef}
       id={presentation ? undefined : 'contact'}
-      className={`relative ${
+      className={`relative overflow-hidden ${
         presentation
           ? 'w-full border-t border-border py-8 sm:py-10'
           : 'scroll-mt-20 border-t border-border pt-24 sm:pt-28'
       }`}
       aria-labelledby="contact-heading"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      {!presentation ? <SectionBackdrop variant="circuit" /> : null}
+      <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
         <div data-contact-heading data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Contact
@@ -158,7 +160,7 @@ export default function Contact({
         <footer
           data-contact-footer
           data-gsap-reveal
-          className="mt-16 border-t border-border py-8 sm:mt-20"
+          className="relative z-10 mt-16 border-t border-border py-8 sm:mt-20"
         >
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-center text-sm text-fg-muted sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:text-left">
             <p className="order-1">

@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import { Server, Layout, Database, Container } from 'lucide-react'
 import { skills } from '../data/content'
 import ScrollHeading from './ScrollHeading'
+import SectionBackdrop from './SectionBackdrop'
 import { useGsapScroll, SECTION_START, SECTION_END } from '../hooks/useGsapScroll'
 
 const categoryIcons = {
@@ -125,12 +126,13 @@ export default function Skills({
     <section
       ref={sectionRef}
       id={presentation ? undefined : 'skills'}
-      className={`relative ${
+      className={`relative overflow-hidden ${
         presentation ? 'w-full py-16 sm:py-20' : 'scroll-mt-20 py-24 sm:py-28'
       }`}
       aria-labelledby="skills-heading"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      {!presentation ? <SectionBackdrop variant="dots" /> : null}
+      <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
         <div data-skills-header data-gsap-reveal className="max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-accent">
             Skills
